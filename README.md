@@ -1,6 +1,12 @@
-## Instal Dependencies
+## Create Virtual Enviroment 
 ```bash
 cd flask_backend
+python -m venv my-venv
+source my-venv/bin/activate
+```
+
+## Instal Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
