@@ -1,4 +1,8 @@
-## Installation
+## Instal Dependencies
+```bash
+cd flask_backend
+pip install -r requirements.txt
+```
 
 ## Run Redis
 
@@ -9,21 +13,21 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 ## Start Flask
 
 ```bash
-cd flask_backend/workers
+cd workers
 python server.py
 ```
 
 ## Start Celery
 
 ```bash
-cd flask_backend/workers
-celery -A <your-celery-app-module> worker --loglevel=info
+cd workers
+celery -A tasks worker --loglevel=info
 ```
 
 ## Load Problems
 
 ```bash
-cd flask_backend/load_problems
+cd load_problems
 python load_problems.py
 ```
 ## Example: Enqueue a Code Submission
