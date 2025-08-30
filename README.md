@@ -10,11 +10,9 @@ source my-venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run Redis
+## Run Redis  
+`docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest` - `localhost:8001` to view Redis storage. **NOTE:** tasks: db0, testcases: db1
 
-```bash
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
-```
 
 ## Start Flask
 
