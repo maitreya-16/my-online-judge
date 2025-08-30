@@ -43,7 +43,7 @@ Code and Input is encoded
   //remove customeTestcase for submit
   "customTestcase": "MyAzCjEgMiAzCjQgNSA2CjcgOCA5",  
   "language": "cpp",
-  "problem_id": 101
+  "problem_id": 0
 }
 ```
 
