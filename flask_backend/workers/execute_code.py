@@ -27,7 +27,7 @@ LANGUAGE_CONFIG = {
     },
     "java": {
         "extension": ".java",
-        "image": "openjdk:17-jdk-alpine",
+        "image": "openjdk:21-jdk",
         "compile_cmd": "javac {filename}",
         "run_command": "java {classname}",
         "timeout": 5,
@@ -71,10 +71,9 @@ def get_cached_testcases(problem_id):
 
 def compile_code(work_dir,filename,exec_name,language):
     if language not in ["cpp","java"]:
-        return {"status:success"}
+        return {"status":"success"}
 
     config = LANGUAGE_CONFIG[language]
-
     #java
     if language=='java':
         compile_cmd =  config["compile_cmd"].format(filename=filename)
@@ -240,6 +239,7 @@ def submit (submission_id , problem_id , code , language ):
             
             work_dir = prepare_submission_directory(submission_id)
 
+            
 
             if language== 'java':
                 classname = find_classname(code)
@@ -255,6 +255,7 @@ def submit (submission_id , problem_id , code , language ):
                 f.write(code)
 
             #compiling ^_^
+            logging.info("Before Compiling")
             compile_result  = compile_code(work_dir,filename,exec_name,language)
 
 
