@@ -1,31 +1,40 @@
 import redis 
 import os
 
-r = redis.Redis(host='localhost',db=1, port=6379, decode_responses=True)
+r = redis.Redis(host='localhost', db=1, port=6379, decode_responses=True)
 
-def load_data(pid , path):
-    # print("Problem id ",pid)
-    # print(path)
+def load_data(pid, path):
     i = 0
     while True:
-        input_path = os.path.join(path,f"input_{i}.txt")
-        output_path = os.path.join(path,f"output_{i}.txt")
-        # print(input_path)
-        # print(output_path)
-        if not os.path.exists(input_path) or not os.path.exists(output_path):
-            print("Input output finished")
-            break
-        with open (input_path,'r') as f:
-            input = (f.read().strip())
-            r.set(f"{pid}/input_{i}",input)
-        with open(output_path,"r") as f:
-            output = (f.read().strip())
-            r.set(f"{pid}/output_{i}",output)
-        i=i+1
-    r.set(f"{pid}/count",i)
+        input_path = os.path.join(path, f"input_{i}.txt")
+        output_path = os.path.join(path, f"output_{i}.txt")
 
-# print(os.listdir("problems"))
-for pid in (os.listdir("problems")):
+        if not os.path.exists(input_path) or not os.path.exists(output_path):
+            print(f"Input/output finished for {pid}")
+            break
+
+        with open(input_path, 'r') as f:
+            input_data = f.read().strip()
+            r.set(f"{pid}/input_{i}", input_data)
+
+        with open(output_path, "r") as f:
+            output_data = f.read().strip()
+            r.set(f"{pid}/output_{i}", output_data)
+
+        i += 1
+
+    r.set(f"{pid}/count", i)
+
+    # ✅ Add solution.cpp if it exists
+    solution_path = os.path.join(path, "solution.cpp")
+    if os.path.exists(solution_path):
+        with open(solution_path, "r") as f:
+            solution_code = f.read().strip()
+            r.set(f"{pid}/solution", solution_code)
+        print(f"Loaded solution.cpp for problem {pid}")
+    else:
+        print(f"No solution.cpp found for problem {pid}")
+
+for pid in os.listdir("problems"):
     path = os.path.join("problems", pid)
-    load_data(pid,path)
-        
+    load_data(pid, path)

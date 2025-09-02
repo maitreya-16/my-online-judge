@@ -1,5 +1,6 @@
+from codecs import decode
 from celery import Celery
-from execute_code import run_code as run
+from execute_code import run_code as run, runSystemcode
 from execute_code import submit
 import os
 
@@ -37,4 +38,15 @@ def submit_code(data):
     )
     return (result)
 
+@app.task
+def run_system_code(data):
+    # if data.get('customTestcase'):
+    #     data['customTestcase'] = decode(data['customTestcase'])
+
+    result = runSystemcode(
+        submission_id=data['submission_id'],
+        problem_id=data['problem_id'],
+        inputData=data.get('customTestcase')
+    )
+    return (result)
     

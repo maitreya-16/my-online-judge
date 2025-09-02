@@ -1,6 +1,8 @@
 import os
 # import shutil
 # import time
+import sys
+import shutil
 import subprocess
 import logging
 import re
@@ -8,6 +10,16 @@ import base64
 import redis
 r = redis.StrictRedis(host='localhost',db=1, port=6379, decode_responses=True)
 base_dir = os.getcwd()
+
+
+logging.basicConfig(
+    level=logging.INFO,  # show INFO and above
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # send logs to terminal
+    ]
+)
+
 
 LANGUAGE_CONFIG = {
     "python": {
@@ -324,6 +336,140 @@ def submit (submission_id , problem_id , code , language ):
             
             return result
         
+def runSystemcode(submission_id, problem_id, inputData=None):
+   try:
+        if not isinstance(problem_id, str):
+            problem_id = str(problem_id)
+
+        work_dir = prepare_submission_directory(submission_id)
+
+        input_file = os.path.join(work_dir, "inputs", "custom_input.txt")
+
+        if inputData is None:
+            sample_input_path = os.path.join(
+                "problems", problem_id, "sample.txt")
+            if not os.path.exists(sample_input_path):
+                return {"status": "failed", "user_output": "Sample input file not found."}
+
+            logging.info(f"Reading sample input from {sample_input_path}")
+            with open(sample_input_path, "r") as sample_file:
+                inputData = sample_file.read()
+
+
+        logging.info("Saving custom input data")
+        with open(input_file, "w") as f:
+            f.write(inputData)
 
         
+        expected_output = execute_reference_solution(
+            problem_id, submission_id, work_dir, input_file)
+        
+        logging.info("expected output: ",expected_output)
+        return {"status": "executed_successfully", "expected_output": expected_output}
 
+   except Exception as e:
+          logging.error(f"An error occurred during execution: {e}")
+          return {"status": "failed", "expected_output": str(e)}
+
+   finally:
+     logging.info("Cleaning up submission directory")
+     work_dir = os.path.join(os.getcwd(), "submissions", f"submission_{submission_id}")
+     if os.path.exists(work_dir):
+        shutil.rmtree(work_dir)   
+
+def execute_reference_solution(problem_id, submission_id, work_dir, input_file):
+    """Fetch solution.cpp from Redis (by problem_id), compile, and run inside Docker."""
+    try:
+        if not isinstance(problem_id, str):
+            problem_id = str(problem_id)
+            
+        # Fetch solution code from Redis
+        solution_code = r.get(f"problem_{problem_id}/solution")
+        if not solution_code:
+            logging.error(f"Solution code not found in Redis for problem {problem_id}")
+            return "[Error] Solution code not found"
+        
+        work_dir = f"/tmp/submissions/submission_{submission_id}"
+        os.makedirs(work_dir, exist_ok=True)
+        
+        if os.path.isabs(input_file):
+            
+            input_file_relative = input_file
+        else:
+            input_file_relative = os.path.relpath(input_file, work_dir)
+        
+        solution_file = os.path.join(work_dir, "solution.cpp")
+        
+        if isinstance(solution_code, bytes):
+            solution_code = solution_code.decode("utf-8")
+            
+        with open(solution_file, "w") as f:
+            f.write(solution_code)
+    
+        compile_cmd = "g++ -o solution_exec solution.cpp"
+        logging.info(f"Compiling solution with command: {compile_cmd}")
+        compile_result = subprocess.run(
+            compile_cmd,
+            shell=True,
+            cwd=work_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        
+        if compile_result.returncode != 0:
+            logging.error(f"Compilation failed. Error: {compile_result.stderr.decode()}")
+            return f"[Compilation Error] {compile_result.stderr.decode().strip()}"
+            
+        logging.info("Compilation successful.")
+        
+        docker_input_file = "input.txt"
+        if not os.path.exists(os.path.join(work_dir, docker_input_file)):
+            if os.path.exists(input_file):
+                import shutil
+                shutil.copy2(input_file, os.path.join(work_dir, docker_input_file))
+            else:
+      
+                with open(os.path.join(work_dir, docker_input_file), "w") as f:
+                    f.write("")
+        
+        # Run inside Docker with corrected paths
+        docker_cmd = [
+            "docker", "run", "--rm", 
+            "-v", f"{work_dir}:/workspace",  
+            "-w", "/workspace",             
+            "gcc:latest",
+            "sh", "-c",
+            f"./solution_exec < {docker_input_file}", 
+        ]
+        
+        logging.info(f"Executing solution with Docker: {' '.join(docker_cmd)}")
+        result = subprocess.run(
+            docker_cmd, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE,
+            timeout=30  
+        )
+        
+        if result.returncode != 0:
+            logging.error(f"Execution failed. Error: {result.stderr.decode()}")
+            return f"[Runtime Error] {result.stderr.decode().strip()}"
+        
+        # Return program output
+        output = result.stdout.decode().strip()
+        logging.info(f"Solution executed successfully. Output: {output}")
+        return output
+        
+    except subprocess.TimeoutExpired:
+        logging.error("Solution execution timed out")
+        return "[Runtime Error] Execution timed out"
+    except Exception as e:
+        logging.error(f"Unexpected error in execute_reference_solution: {str(e)}")
+        return f"[Unexpected Error] {str(e)}"
+    finally:
+        # Optional: Clean up work directory
+        try:
+            if 'work_dir' in locals() and os.path.exists(work_dir):
+                import shutil
+                shutil.rmtree(work_dir)
+        except:
+            pass  # Ignore cleanup errors
