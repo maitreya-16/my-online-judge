@@ -113,6 +113,7 @@ def execute_code_in_docker(submission_id, work_dir,run_cmd, input_file, image, t
         "--name", container_name,
         "-v", f"{work_dir}:/app",
         "-w", "/app",
+        "--memory", f"{memory_limit}m", 
         image, "sh", "-c",
         f"{run_cmd} < {input_file_rel}"
     ]
@@ -125,16 +126,26 @@ def execute_code_in_docker(submission_id, work_dir,run_cmd, input_file, image, t
             stdout=subprocess.PIPE,  # capture standard output
             stderr=subprocess.PIPE,  # capture errors
             text=True,               # stringify the output
-            check=True               # error raise karega
+            check=True,               # error raise karega
+            timeout=timeout          # time limit
         )
 
         # logging.info("result in docker : ",result)
 
         return {"status": "success", "user_output": result.stdout.strip()}
 
-    except subprocess.CalledProcessError as e:
+    except subprocess.TimeoutExpired:
+        subprocess.run(["docker", "rm", "-f", container_name])
+        return {"status": "timeout", "message": "Time Limit Exceeded"}
 
-        return {"status": "runtime_error", "message": e.stderr.strip()}
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 137:
+            logging.error("Memory Limit Exceeded")
+            return {"status": "memory_exceeded", "message": "Memory Limit Exceeded"}
+        else:
+            logging.error(f"Runtime error in Docker container: {e}")
+            return {"status": "runtime_error", "message": e.stderr.strip() or "Runtime Error"}
+
     
 
 
