@@ -211,13 +211,21 @@ def run_code(submission_id , problem_id , code , language ,inputData=None):
 
         if exec_result["status"] != "success":
             logging.warning(f"User code execution failed with status")
-            return {"status": exec_result["status"],
-                    "user_output": exec_result["message"]
-                    }
+            return {
+                "status": exec_result["status"],
+                "message": exec_result["message"],
+                # "expected_output": None,
+                "user_output": None
+            }
                     
+        logging.info("user_output: %s", exec_result["user_output"])
 
-        return {"status": "sucess", "user_output": exec_result["user_output"]}
-
+        return {
+            "status": "success",
+            "message": None,
+            "expected_output": None,
+            "user_output": exec_result["user_output"]
+        }
         
     except Exception as e:
         logging.error(f"An error occurred during execution: {e}")

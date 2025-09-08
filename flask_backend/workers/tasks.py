@@ -1,5 +1,6 @@
 from codecs import decode
 from celery import Celery
+import requests
 from execute_code import run_code as run, runSystemcode
 from execute_code import submit
 import os
@@ -13,7 +14,22 @@ app = Celery(
     broker=REDIS_BROKER_URL,
     backend=REDIS_BACKEND_URL,
 )
+BACKEND_HOST = "localhost"
+BACKEND_PORT = 2000
+
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
+
+WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
+
+def send_webhook_result(url, data):
+    """POST result to webhook endpoint."""
+    try:
+        print(f"[Webhook] Sending to {url}")
+        r = requests.post(url, json=data, timeout=5)
+        r.raise_for_status()
+        print("[Webhook] Sent successfully.")
+    except Exception as e:
+        print(f"[Webhook] Failed to send: {e}")
 
 @app.task
 def run_code(data):
@@ -25,7 +41,18 @@ def run_code(data):
         problem_id=data['problem_id'],
         inputData=data['customTestcase']
     )
-    return (result)
+    # return (result)
+
+    webhook_data = {
+        'submission_id': data['submission_id'],
+        'status': result.get('status'),
+        'message': result.get('message'),
+        'expected_output': result.get('expected_output'),
+        'user_output':result.get('user_output')
+        
+    }
+    send_webhook_result(WEBHOOK_URL_RUN, webhook_data)
+
 
 @app.task
 def submit_code(data):
