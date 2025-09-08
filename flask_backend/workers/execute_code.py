@@ -1,5 +1,5 @@
 import os
-# import shutil
+import shutil
 # import time
 import sys
 import shutil
@@ -49,6 +49,10 @@ LANGUAGE_CONFIG = {
 
 def decode(encoded_code):
     return base64.b64decode(encoded_code).decode('utf-8')
+
+def cleanup_submission_directory(work_dir):
+    if os.path.exists(work_dir):
+        shutil.rmtree(work_dir)
 
 def validate_and_configure(language):
     if language not in LANGUAGE_CONFIG:
@@ -241,6 +245,9 @@ def run_code(submission_id , problem_id , code , language ,inputData=None):
     except Exception as e:
         logging.error(f"An error occurred during execution: {e}")
         return {"status": "failed", "message": str(e)}
+    finally:
+        logging.info("Cleaning up submission directory")
+        cleanup_submission_directory(work_dir)
 
 
 
@@ -330,7 +337,7 @@ def submit (submission_id , problem_id , code , language ):
                     result.update({
                         "status":exec_result["status"],
                         "message":exec_result["message"],
-                        "failed_test_case":f"Test Case {i}"
+                        "failed_test_case":f"Test Case {i+1}"
                     })
                     return result
 
@@ -343,7 +350,7 @@ def submit (submission_id , problem_id , code , language ):
                     result.update({
                         "status":"wrong",
                         "message":"Failed Testcase",
-                        "failed_test_case":f"Test Case {i}"
+                        "failed_test_case":f"{i+1}"
                     })
 
                 logging.info("We are after execute_code_in_docker %s",exec_result["status"])
@@ -352,9 +359,11 @@ def submit (submission_id , problem_id , code , language ):
         
         except Exception as e:
             logging.error(f"An error occurred during submission: {e}")
-            result.update({"status": "failedd", "message": str(e)})
-            
+            result.update({"status": "failed", "message": str(e)})
             return result
+        finally:
+            logging.info("Cleaning up submission directory")
+            cleanup_submission_directory(work_dir)
         
 def runSystemcode(submission_id, problem_id, inputData=None):
    try:
