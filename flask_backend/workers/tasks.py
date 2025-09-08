@@ -15,7 +15,7 @@ app = Celery(
     backend=REDIS_BACKEND_URL,
 )
 BACKEND_HOST = "localhost"
-BACKEND_PORT = 2000
+BACKEND_PORT = //specify ur express port
 
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
 
