@@ -15,11 +15,13 @@ app = Celery(
     backend=REDIS_BACKEND_URL,
 )
 BACKEND_HOST = "localhost"
-BACKEND_PORT = 2000
+BACKEND_PORT = 3000
+# specify ur express port
 
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
 
 WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
+WEBHOOK_URL_SUBMIT = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/submit'
 WEBHOOK_URL_SYSTEM = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/system'
 
 def send_webhook_result(url, data):
@@ -52,7 +54,8 @@ def run_code(data):
         'user_output':result.get('user_output')
         
     }
-    send_webhook_result(WEBHOOK_URL_RUN, webhook_data)
+    # send_webhook_result(WEBHOOK_URL_RUN, webhook_data)
+    return result
 
 
 @app.task
@@ -64,6 +67,13 @@ def submit_code(data):
         code=data['code'],
         language=data['language'],
     )
+    webhook_data = {
+        'submission_id':data["submission_id"],
+        'status':result.get('status'),
+        'message':result.get('message'),
+        'failed_test_case':result.get('failed_test_case')
+    }
+    # send_webhook_result(WEBHOOK_URL_SUBMIT, webhook_data)
     return (result)
 
 @app.task
@@ -76,6 +86,9 @@ def run_system_code(data):
         problem_id=data['problem_id'],
         inputData=data.get('customTestcase')
     )
+    # return (result)
+    
+
     # return (result)
     
     webhook_data = {
