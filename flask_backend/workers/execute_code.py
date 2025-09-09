@@ -357,6 +357,8 @@ def submit (submission_id , problem_id , code , language ):
             return result
         
 def runSystemcode(submission_id, problem_id, inputData=None):
+   logging.info("Input data ",inputData)
+   inputData=decode(inputData)
    try:
         if not isinstance(problem_id, str):
             problem_id = str(problem_id)
@@ -448,7 +450,6 @@ def execute_reference_solution(problem_id, submission_id, work_dir, input_file):
                 import shutil
                 shutil.copy2(input_file, os.path.join(work_dir, docker_input_file))
             else:
-      
                 with open(os.path.join(work_dir, docker_input_file), "w") as f:
                     f.write("")
         

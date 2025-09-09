@@ -20,6 +20,7 @@ BACKEND_PORT = 2000
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
 
 WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
+WEBHOOK_URL_SYSTEM = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/system'
 
 def send_webhook_result(url, data):
     """POST result to webhook endpoint."""
@@ -69,11 +70,18 @@ def submit_code(data):
 def run_system_code(data):
     # if data.get('customTestcase'):
     #     data['customTestcase'] = decode(data['customTestcase'])
-
+    
     result = runSystemcode(
         submission_id=data['submission_id'],
         problem_id=data['problem_id'],
         inputData=data.get('customTestcase')
     )
-    return (result)
+    # return (result)
     
+    webhook_data = {
+        'submission_id': data['submission_id'],
+        'status': result.get('status'),
+        'message': result.get('message'),
+        'expected_output': result.get('expected_output')
+    }
+    send_webhook_result(WEBHOOK_URL_SYSTEM, webhook_data)
