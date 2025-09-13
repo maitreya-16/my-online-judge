@@ -257,7 +257,8 @@ def submit (submission_id , problem_id , code , language ):
             result = {
                 "status":"accepted",
                 "message":None,
-                "failed_test_case":None
+                "failed_test_case":None,
+                "score":0
             }
 
             code = decode(code)
@@ -337,7 +338,8 @@ def submit (submission_id , problem_id , code , language ):
                     result.update({
                         "status":exec_result["status"],
                         "message":exec_result["message"],
-                        "failed_test_case":f"Test Case {i+1}"
+                        "failed_test_case":f"{i+1}",
+                        "score":i*10
                     })
                     return result
 
@@ -350,11 +352,14 @@ def submit (submission_id , problem_id , code , language ):
                     result.update({
                         "status":"wrong",
                         "message":"Failed Testcase",
-                        "failed_test_case":f"{i+1}"
+                        "failed_test_case":f"{i+1}",
+                        "score":i*10
                     })
+                    return result
 
                 logging.info("We are after execute_code_in_docker %s",exec_result["status"])
                 logging.info("user_output : %s",exec_result.get("user_output"))
+            result.update({"score":len(test_inputs)*10})
             return result
         
         except Exception as e:

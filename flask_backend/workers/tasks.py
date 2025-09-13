@@ -1,3 +1,4 @@
+from asyncio import log
 from codecs import decode
 from celery import Celery
 import requests
@@ -71,9 +72,11 @@ def submit_code(data):
         'submission_id':data["submission_id"],
         'status':result.get('status'),
         'message':result.get('message'),
-        'failed_test_case':result.get('failed_test_case')
+        'failed_test_case':result.get('failed_test_case'),
+        'score':result.get('score')
     }
-    # send_webhook_result(WEBHOOK_URL_SUBMIT, webhook_data)
+    print("Webhook Data:", webhook_data)
+    send_webhook_result(WEBHOOK_URL_SUBMIT, webhook_data)
     return (result)
 
 @app.task
