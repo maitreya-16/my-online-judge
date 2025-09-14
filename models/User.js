@@ -22,14 +22,15 @@ const User = sequelize.define('User', {
     team_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        references: {
-            model: 'teams', // lowercase plural
-            key: 'id'
-        },
-           onDelete: "CASCADE",
-      onUpdate: "CASCADE",
+    //     references: {
+    //         model: 'teams', // lowercase plural
+    //         key: 'id'
+    //     },
+    //        onDelete: "CASCADE",
+    //   onUpdate: "CASCADE",
         
     },
+
     created_at: { type: DataTypes.DATE, allowNull: true, defaultValue: DataTypes.NOW }
 }, {
     timestamps: false,

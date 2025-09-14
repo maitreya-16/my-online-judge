@@ -19,14 +19,30 @@ const Leaderboard = sequelize.define("Leaderboard", {
   team_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: "teams", key: "id" },
-    onDelete: "CASCADE",
+    // references: { model: "teams", key: "id" },
+    // onDelete: "CASCADE",
   },
 
   // Array of objects: [{ problem_id, score, accepted_time }]
-  problems: {
-    type: DataTypes.JSONB,
-    defaultValue: [],
+  problem_1: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  problem_2: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  problem_3: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  problem_4: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  problem_5: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
 
   total_score: {
@@ -43,6 +59,7 @@ const Leaderboard = sequelize.define("Leaderboard", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+
 }, {
   indexes: [
     {
