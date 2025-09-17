@@ -2,22 +2,26 @@ from asyncio import log
 from codecs import decode
 from celery import Celery
 import requests
-from execute_code import run_code as run, runSystemcode
-from execute_code import submit
+from workers.execute_code import run_code as run, runSystemcode
+from workers.execute_code import submit
 import os
 
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+BACKEND_HOST = os.getenv('BACKEND_HOST', 'backend')
+BACKEND_PORT = int(os.getenv('BACKEND_PORT', 3000))
 
-REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', 'redis://localhost:6379/0')
-REDIS_BACKEND_URL = os.getenv('REDIS_BACKEND_URL', 'redis://localhost:6379/0')
+REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
+REDIS_BACKEND_URL = os.getenv('REDIS_BACKEND_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
 
 app = Celery(    
     'tasks',
     broker=REDIS_BROKER_URL,
     backend=REDIS_BACKEND_URL,
 )
-BACKEND_HOST = "localhost"
-BACKEND_PORT = 3000
+
 # specify ur express port
+
 
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
 
@@ -35,7 +39,7 @@ def send_webhook_result(url, data):
     except Exception as e:
         print(f"[Webhook] Failed to send: {e}")
 
-@app.task
+@app.task(name="tasks.run_code")
 def run_code(data):
     # print("Running code...")
     result = run(
@@ -55,13 +59,13 @@ def run_code(data):
         'user_output':result.get('user_output')
         
     }
-    # send_webhook_result(WEBHOOK_URL_RUN, webhook_data)
+    send_webhook_result(WEBHOOK_URL_RUN, webhook_data)
     return result
 
 
-@app.task
+@app.task(name="tasks.submit_code")
 def submit_code(data):
-    # print("Submitting code...")
+    print("Submitting code...")
     result = submit(
         submission_id=data['submission_id'],
         problem_id=data['problem_id'],
@@ -73,13 +77,13 @@ def submit_code(data):
         'status':result.get('status'),
         'message':result.get('message'),
         'failed_test_case':result.get('failed_test_case'),
-        'score':result.get('score')
+        'score':result.get('score'),
     }
     print("Webhook Data:", webhook_data)
     send_webhook_result(WEBHOOK_URL_SUBMIT, webhook_data)
     return (result)
 
-@app.task
+@app.task(name="tasks.run_system_code")
 def run_system_code(data):
     # if data.get('customTestcase'):
     #     data['customTestcase'] = decode(data['customTestcase'])
@@ -101,3 +105,6 @@ def run_system_code(data):
         'expected_output': result.get('expected_output')
     }
     send_webhook_result(WEBHOOK_URL_SYSTEM, webhook_data)
+    return result
+
+    

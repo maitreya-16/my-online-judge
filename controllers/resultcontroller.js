@@ -1,12 +1,12 @@
-const { Leaderboard, Team } = require("../models");
+const Leaderboard  = require("../models/Leaderboard.js");
 
 /**
  * Get result (rank + stats) for a particular team in an event
  */
 exports.getTeamResult = async (req, res) => {
   try {
-    const { event_id, team_id } = req.params;
-
+    const event_id = req.user.event_id 
+    const team_id = req.user.team_id
     // Fetch all teams for this event in sorted order
     const leaderboard = await Leaderboard.findAll({
       where: { event_id },
@@ -14,12 +14,7 @@ exports.getTeamResult = async (req, res) => {
         ["total_score", "DESC"],
         ["last_submission_time", "ASC"], // tie-breaker
       ],
-      include: [
-        {
-          model: Team,
-          attributes: ["id", "team_name"],
-        },
-      ],
+
     });
 
     if (!leaderboard.length) {

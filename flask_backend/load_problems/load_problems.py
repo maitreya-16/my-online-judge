@@ -1,7 +1,8 @@
 import redis 
 import os
-
-r = redis.Redis(host='localhost', db=1, port=6379, decode_responses=True)
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+r = redis.Redis(host=REDIS_HOST, db=1, port=REDIS_PORT, decode_responses=True)
 
 def load_data(pid, path):
     i = 0

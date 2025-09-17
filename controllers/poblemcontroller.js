@@ -4,10 +4,10 @@ const ProblemSample = require('../models/ProblemSample');
 // Create new Problem (with optional samples)
 exports.createProblem = async (req, res) => {
   try {
-    const { title, description,score,input_format,output_format,consraints,is_junior,time_limit,memory_limit,event_id,samples} = req.body;
+    const { title, description,score,input_format,output_format,consraints,isjunior,time_limit,memory_limit,event_id,samples} = req.body;
 
     // create problem first
-    const problem = await Problem.create({  title, description,score,input_format,output_format,consraints,is_junior,time_limit,memory_limit,event_id, });
+    const problem = await Problem.create({  title, description,score,input_format,output_format,consraints,isjunior,time_limit,memory_limit,event_id, });
     // const missingFields = problem.filter(field => !(field in req.body));
 
     // if (missingFields.length > 0) {
@@ -41,9 +41,9 @@ exports.createProblem = async (req, res) => {
 exports.getAllProblems = async (req, res) => {
      
   try {
-    const { event_id, is_junior } = req.user;
+    const { event_id, isjunior } = req.user;
     const problems = await Problem.findAll({
-        where: { event_id, is_junior },
+        where: { event_id, isjunior },
       include: [{ model: ProblemSample, as: "samples" }]
     });
     return res.json(problems);
@@ -127,7 +127,7 @@ exports.updateProblem = async (req, res) => {
       input_format,
       output_format,
       consraints,
-      is_junior,
+      isjunior,
       time_limit,
       memory_limit,
       event_id,
@@ -146,7 +146,7 @@ exports.updateProblem = async (req, res) => {
     problem.input_format = input_format || problem.input_format;
     problem.output_format = output_format || problem.output_format;
     problem.consraints = consraints || problem.consraints;
-    problem.is_junior = (is_junior !== undefined) ? is_junior : problem.is_junior;
+    problem.isjunior = (isjunior !== undefined) ? isjunior : problem.isjunior;
     problem.time_limit = time_limit || problem.time_limit;
     problem.memory_limit = memory_limit || problem.memory_limit;
     problem.event_id = event_id || problem.event_id;

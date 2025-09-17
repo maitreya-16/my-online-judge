@@ -1,7 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const http = require("http");
-const cors = require("cors");
+// const cors = require("cors");
 const sequelize = require("./config/database");
 const { syncDB } = require('./models');
 const cookieParser = require('cookie-parser');
@@ -40,18 +40,11 @@ app.get("/", (req, res) => res.send("🚀 Online Judge API is running..."));
 app.use("/admin", adminRoutes);
 app.use("/user", userRoutes);
 app.use("/problems", problemroutes);
-app.use("/results", resultRoutes);
+app.use("/result", resultRoutes);
 app.use("/leaderboard", leaderboardRoutes);
 app.use("/submission",submissionRoutes);
 app.use("/webhook",webhookRoutes);
 const PORT = process.env.PORT || 3000;
-
-initSocket(server,{
-    cors: {
-        origin: "*",
-        credentials: true,
-    }
-});
 
 sequelize.sync()
   .then(() => {

@@ -6,10 +6,10 @@ const Event = require("../models/Event");
 exports.registerUser = async (req, res) => {
     try {
         console.log(req.body); // Debug incoming request body
-        const { username, email, password, is_junior, event_id ,role} = req.body;
+        const { username, email, password, isjunior, event_id ,role} = req.body;
 
         // Input validation
-        if (!username || !email || !password || is_junior === undefined ) {
+        if (!username || !email || !password || isjunior === undefined ) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
@@ -55,7 +55,7 @@ exports.registerUser = async (req, res) => {
             password: hashedPassword,
             email,
             role: role || 'user',
-            is_junior,
+            isjunior,
             event_id
         });
 
@@ -65,7 +65,7 @@ exports.registerUser = async (req, res) => {
             user1_id: newUser.id,  // Assign the user ID after creation
             user2_id: null,        // No second user
             event_id,
-            is_junior,
+            isjunior,
             score: 0
         });
 
@@ -79,7 +79,7 @@ exports.registerUser = async (req, res) => {
                 username: newUser.username,
                 email: newUser.email,
                 event_id: newUser.event_id,
-                is_junior: newUser.is_junior
+                isjunior: newUser.isjunior
             }
         });
 
@@ -94,8 +94,6 @@ exports.registerUser = async (req, res) => {
         res.status(500).json({ error: 'Error registering user', details: error.message });
     }
 };
-
-
 exports.RegisterTeam = async (req, res) => {
     try {
         const { username1, team_name, username2, event_id} = req.body;
@@ -122,7 +120,7 @@ exports.RegisterTeam = async (req, res) => {
         }
 
         //  Ensure users belong to the same event & category
-        if (user1.event_id !== user2.event_id || user1.is_junior !== user2.is_junior) {
+        if (user1.event_id !== user2.event_id || user1.isjunior !== user2.isjunior) {
             return res.status(400).json({ error: "Both users must be in the same event and category." });
         }
 
@@ -136,7 +134,7 @@ exports.RegisterTeam = async (req, res) => {
             user1_id: user1.id,
             user2_id: user2.id,
             event_id,
-            is_junior: user1.is_junior,
+            isjunior: user1.isjunior,
             score: 0
         });
 
@@ -158,7 +156,7 @@ exports.RegisterTeam = async (req, res) => {
 
 exports.Login = async (req, res) => {
     try {
-        const { username, password, team_login, team_name, event_id } = req.body;
+        const { username, password, event_id ,isjunior} = req.body;
 
         // Input validation
         if (!username || !password || !event_id) {
@@ -177,40 +175,18 @@ exports.Login = async (req, res) => {
         if (now > event.end_time) {
             return res.status(403).json({ error: "Event has ended" });
         }
-
-        if (team_login === undefined) {
-            return res.status(400).json({ error: "The 'team_login' field is required (true or false)" });
-        }
-
         let user;
 
-        if (team_login) {
-            if (!team_name) {
-                return res.status(400).json({ error: "Team login requires 'team_name' to be provided" });
-            }
-            const team = await Team.findOne({ where: { team_name, event_id } });
-            if (!team) {
-                return res.status(404).json({ error: "Team not found. Please register first" });
+            user = await User.findOne({ where: { username } });
+
+            if(user.isjunior!=isjunior){
+                return res.status(404).json({ error: "User not found" });
             }
 
-            user = await User.findOne({ where: { username, team_id: team.id, event_id } });
-
-            if (!user) {
-                return res.status(404).json({ error: "User not found in this team" });
-            }
-        } else {
-            user = await User.findOne({ where: { username, event_id } });
-
-            if (!user) {
+            if (!user || (event_id === 1 && user.ncc===null) || (event_id===2 && user.rc===null)) {
                 return res.status(404).json({ error: "User not found. Please register first" });
             }
 
-            const checkTeam = await Team.findByPk(user.team_id);
-
-            if (checkTeam && checkTeam.user2_id) {
-                return res.status(400).json({ error: "User is already part of a team. Please login as a team" });
-            }
-        }
 
         const validPassword = await bcrypt.compare(password, user.password);
 
@@ -222,9 +198,9 @@ exports.Login = async (req, res) => {
             {
                 id: user.id,
                 username: user.username,
-                event_id: user.event_id,
-                is_junior: user.is_junior,
-                team_id: user.team_id
+                event_id: event_id,
+                isjunior: user.isjunior,
+                team_id: event_id===1?user.ncc:user.rc
             },
             process.env.JWT_SECRET,
             { expiresIn: "2h" }
@@ -258,8 +234,7 @@ exports.Login = async (req, res) => {
             user: {
                 username: user.username,
                 event_id: user.event_id,
-                is_junior: user.is_junior,
-                team_name: team_login ? team_name : null
+                isjunior: user.isjunior,
             }
         });
 
@@ -271,6 +246,7 @@ exports.Login = async (req, res) => {
 exports.GetProfile = async(req,res)=>{
     try{
         const user = await User.findByPk(req.user.id,{attributes:{exclude:['password']}});
+        return res.status(200).json({user});
     }catch(error){
         console.error("Error fetching user profile:", error);
         res.status(500).json({ error: "Error fetching user profile", details: error.message });
@@ -279,7 +255,7 @@ exports.GetProfile = async(req,res)=>{
 
 exports.Logout = async (req,res)=>{
     try{
-        res.clearCookie("tokes");
+        res.clearCookie("token");
         res.status(200).json({message:"User logged out successfully"});
     }
     catch(error){
@@ -287,7 +263,6 @@ exports.Logout = async (req,res)=>{
         res.status(500).json({ error: "Error logging out", details: error.message });
     }
 };
-
 
 exports.getAllEvents = async (req, res) => {
     try {

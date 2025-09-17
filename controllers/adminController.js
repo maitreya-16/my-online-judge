@@ -23,7 +23,7 @@ exports.registerAdmin = async(req,res) =>{
             username,
             email,
             password: hashedPassword,
-            is_junior: false,
+            isjunior: false,
             role: 'admin'
         });
         res.status(201).json({ message: "Admin registered successfully", admin: newAdmin });
@@ -55,7 +55,7 @@ exports.loginAdmin = async (req, res) => {
             {
                 id: user.id,
                 username: user.username,
-                is_junior: user.is_junior,
+                isjunior: user.isjunior,
                 role: user.role,
             },
             process.env.JWT_SECRET,
@@ -82,7 +82,7 @@ exports.getAllUsers = async (req, res) => {
                 "id",
                 "username",
                 "email",
-                "is_junior",
+                "isjunior",
                 "role",
                 "created_at",
                 "event_id",
@@ -105,7 +105,7 @@ exports.getAllTeams = async (req, res) => {
                 "user1_id",
                 "user2_id",
                 "event_id",
-                "is_junior",
+                "isjunior",
                 "score",
                 "correct_submission",
                 "wrong_submission",
@@ -138,7 +138,7 @@ exports.getAllProblems = async (req, res) => {
             attributes: [
                 "id",
                 "title",
-                "is_junior",
+                "isjunior",
                 "event_id",
                 "created_at",
                 "test_case_path",

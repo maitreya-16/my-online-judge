@@ -69,22 +69,16 @@ exports.updateLeaderboard = async (req, res) => {
  */
 exports.getLeaderboard = async (req, res) => {
   try {
-    const { event_id } = req.params;
-
+    // const { event_id } = req.params;
+    const event_id = req.user.event_id;
+    const isjunior = req.user.isjunior
     const leaderboard = await Leaderboard.findAll({
-      where: { event_id },
+      where: { event_id ,isjunior},
       order: [
         ["total_score", "DESC"],
         ["last_submission_time", "ASC"], // tie-breaker
       ],
-      include: [
-        {
-          model: Team,
-          attributes: ["id", "team_name"],
-        },
-      ],
     });
-
     return res.status(200).json(leaderboard);
   } catch (error) {
     console.error("Error fetching leaderboard:", error);

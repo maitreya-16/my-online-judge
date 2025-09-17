@@ -5,13 +5,13 @@ const Submission = sequelize.define('Submission', {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     team_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'teams', // lowercase plural
-            key: 'id'
-        },
-           onDelete: "CASCADE",
-      onUpdate: "CASCADE",
+        allowNull: false
+    //     references: {
+    //         model: 'teams', // lowercase plural
+    //         key: 'id'
+    //     },
+    //        onDelete: "CASCADE",
+    //   onUpdate: "CASCADE",
     },
     problem_id: {
         type: DataTypes.INTEGER,
@@ -45,13 +45,9 @@ const Submission = sequelize.define('Submission', {
         allowNull: false,
         defaultValue: 'Pending'
     },
-     execution_time: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0.0
-    },
-      memory_usage: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0.0
+    score:{
+        type:DataTypes.INTEGER,
+        defaultValue:0
     },
      submitted_at: {
         type: DataTypes.DATE,

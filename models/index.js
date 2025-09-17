@@ -8,35 +8,46 @@ const Event = require('./Event');
 const Leaderboard = require('./Leaderboard');
 
 
-// User ↔ Event relationships
-User.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
-Event.hasMany(User, { foreignKey: 'event_id', as: 'Users' });
+// // User ↔ Event relationships
+// User.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
+// Event.hasMany(User, { foreignKey: 'event_id', as: 'Users' });
 
 
-Submission.belongsTo(User, { foreignKey: 'team_id', targetKey: 'team_id', as: 'TeamUsers' });
+// Submission.belongsTo(User, { foreignKey: 'team_id', targetKey: 'team_id', as: 'TeamUsers' });
 
-// Submission.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
-// User.hasMany(Submission, { foreignKey: 'user_id', as: 'Submissions' });
+// // Submission.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+// // User.hasMany(Submission, { foreignKey: 'user_id', as: 'Submissions' });
 
-// Submission ↔ Problem relationships
-Submission.belongsTo(Problem, { foreignKey: 'problem_id', as: 'Problem' });
-Problem.hasMany(Submission, { foreignKey: 'problem_id', as: 'Submissions' });
+// // Submission ↔ Problem relationships
+// Submission.belongsTo(Problem, { foreignKey: 'problem_id', as: 'Problem' });
+// Problem.hasMany(Submission, { foreignKey: 'problem_id', as: 'Submissions' });
 
-// Problem ↔ ProblemSample relationships
-Problem.hasMany(ProblemSample, { foreignKey: 'problem_id' });
+// // Problem ↔ ProblemSample relationships
+Problem.hasMany(ProblemSample, { foreignKey: 'problem_id', as: 'samples' });
 ProblemSample.belongsTo(Problem, { foreignKey: 'problem_id' });
 
 // Problem ↔ Event relationships
-Problem.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
-Event.hasMany(Problem, { foreignKey: 'event_id', as: 'Problems' });
+// Problem.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
+// Event.hasMany(Problem, { foreignKey: 'event_id', as: 'Problems' });
 
-// Submission ↔ Event relationships
-Submission.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
-Event.hasMany(Submission, { foreignKey: 'event_id', as: 'Submissions' });
+// // Submission ↔ Event relationships
+// Submission.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
+// Event.hasMany(Submission, { foreignKey: 'event_id', as: 'Submissions' });
 
 // Leaderboard ↔ Event relationships
-Leaderboard.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
-Event.hasMany(Leaderboard, { foreignKey: 'event_id', as: 'Leaderboards' });
+// Leaderboard.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
+// Event.hasMany(Leaderboard, { foreignKey: 'event_id', as: 'Leaderboards' });
+
+// User.js
+// User.belongsTo(Leaderboard, { foreignKey: 'ncc', as: 'nccTeam' });
+// User.belongsTo(Leaderboard, { foreignKey: 'rcc', as: 'rccTeam' });
+// User.belongsTo(Leaderboard, { foreignKey: 'enigma', as: 'enigmaTeam' });
+
+// // Leaderboard.js
+// Leaderboard.hasMany(User, { foreignKey: 'ncc', as: 'nccUsers' });
+// Leaderboard.hasMany(User, { foreignKey: 'rcc', as: 'rccUsers' });
+// Leaderboard.hasMany(User, { foreignKey: 'enigma', as: 'enigmaUsers' });
+
 
 const syncDB = async () => {
   try {
