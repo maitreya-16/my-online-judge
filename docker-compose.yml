@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  backend:
+    image: maitreya16/node-backend:latest  
+    container_name: node-backend
+    ports:
+      - "3000:3000"
+    environment:
+      JWT_SECRET: your_super_secret_key
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASSWORD: mysecretpass
+      DB_NAME: postgres
+    depends_on:
+      - postgres
+
+  server:
+    image: maitreya16/flask-windows:latest
+    container_name: flask-server
+    restart: always
+    command: python workers/server.py
+    environment:
+      PYTHONPATH: /app
+
+  worker:
+    image: maitreya16/flask-windows:latest
+    container_name: flask-worker
+    restart: always
+    command: celery -A workers.tasks worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      HOST_MACHINE_BASE_DIR: C:\Users\Maitreya\Desktop\oj  # Change this to your actual path
+      PYTHONPATH: /app
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_BROKER_URL: redis://redis:6379/0
+      REDIS_BACKEND_URL: redis://redis:6379/0
+      BACKEND_HOST: backend
+      BACKEND_PORT: 3000
+    working_dir: /app
+    volumes:
+      - ./submissions:/app/submissions:z
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  postgres:
+    image: postgres:15
+    container_name: my-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpass
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: my-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+  
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
