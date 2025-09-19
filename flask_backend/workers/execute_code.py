@@ -109,9 +109,9 @@ def compile_code(work_dir,filename,exec_name,language):
 
 
 def execute_code_in_docker(submission_id, work_dir,run_cmd, input_file, image, timeout, memory_limit):
-
+    host = os.path.normpath(HOST_MACHINE_BASE_DIR)
     input_file_rel = os.path.relpath(input_file, work_dir)
-    work_dir = os.path.join(HOST_MACHINE_BASE_DIR, "submissions", f"submission_{submission_id}")
+    work_dir = os.path.join(host, "submissions", f"submission_{submission_id}")
     container_name = f"submission_{submission_id}_runner"
 
     logging.info("Working dir : ",work_dir,"Input file : ",input_file_rel)
