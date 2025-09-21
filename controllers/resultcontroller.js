@@ -1,12 +1,17 @@
-const Leaderboard  = require("../models/Leaderboard.js");
-
+const Leaderboard = require("../models/Leaderboard.js");
+const sequelize = require("../config/database.js");
 /**
  * Get result (rank + stats) for a particular team in an event
  */
 exports.getTeamResult = async (req, res) => {
   try {
-    const event_id = req.user.event_id 
+    const event_id = req.user.event_id
     const team_id = req.user.team_id
+    const isjunior = req.user.isjunior
+    if (!event_id || !team_id) {
+      return res.status(400).json({ message: "Missing event_id or team_id in user data." });
+    }
+
     // Fetch all teams for this event in sorted order
     const leaderboard = await Leaderboard.findAll({
       where: { event_id },
@@ -36,16 +41,32 @@ exports.getTeamResult = async (req, res) => {
       return res.status(404).json({ message: "Team not found in this event." });
     }
 
+    const rows = await sequelize.query(`
+  SELECT SUM(score) AS total_score
+  FROM problems
+  WHERE event_id = :event_id
+    AND isjunior = :isjunior;
+`, {
+      replacements: { event_id, isjunior },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    console.log(rows); // just the sum
+
+    const totalpossiblescore = rows[0].total_score || 0;
+
+    // Calculate accuracy
+    const accuracy = totalpossiblescore > 0 ? (teamResult.total_score / totalpossiblescore) * 100 : 0;
+
     // Build response
     return res.status(200).json({
-      event_id,
-      team_id: teamResult.team_id,
-      team_name: teamResult.Team?.team_name,
-      rank,
+      username1: teamResult.username1,
+      username2: teamResult.username2,
+      isjunior: teamResult.isjunior,
+      rank: rank,
       total_score: teamResult.total_score,
-      total_solved: teamResult.total_solved,
-      last_submission_time: teamResult.last_submission_time,
-      problems: teamResult.problems, // [{ problem_id, score, accepted_time }]
+      total_submissions: teamResult.total_submissions,
+      accuracy: `${Math.round(accuracy).toFixed(2)}%`,
     });
   } catch (error) {
     console.error("Error fetching team result:", error);

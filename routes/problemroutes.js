@@ -10,6 +10,10 @@ router.post("/create",adminAuthenticate, problemcontroller.createProblem);
 // Get all problems
 router.get("/", authenticateToken,problemcontroller.getAllProblems);
 
+//Get all problems Accuracy
+router.get("/accuracy", authenticateToken,problemcontroller.getAllProblemsAccuracy);
+
+
 // Get a single problem by ID
 router.get("/:id", authenticateToken,problemcontroller.getProblemById);
 

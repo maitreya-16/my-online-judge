@@ -6,12 +6,12 @@ const Submission = sequelize.define('Submission', {
     team_id: {
         type: DataTypes.INTEGER,
         allowNull: false
-    //     references: {
-    //         model: 'teams', // lowercase plural
-    //         key: 'id'
-    //     },
-    //        onDelete: "CASCADE",
-    //   onUpdate: "CASCADE",
+        //     references: {
+        //         model: 'teams', // lowercase plural
+        //         key: 'id'
+        //     },
+        //        onDelete: "CASCADE",
+        //   onUpdate: "CASCADE",
     },
     problem_id: {
         type: DataTypes.INTEGER,
@@ -20,8 +20,8 @@ const Submission = sequelize.define('Submission', {
             model: 'problems', // lowercase plural
             key: 'id'
         },
-           onDelete: "CASCADE",
-      onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
     },
     event_id: {
         type: DataTypes.INTEGER,
@@ -30,8 +30,8 @@ const Submission = sequelize.define('Submission', {
             model: 'events', // lowercase plural
             key: 'id'
         },
-           onDelete: "CASCADE",
-      onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
     },
     code: { type: DataTypes.TEXT, allowNull: false },
     language: { type: DataTypes.STRING, allowNull: false },
@@ -45,11 +45,11 @@ const Submission = sequelize.define('Submission', {
         allowNull: false,
         defaultValue: 'Pending'
     },
-    score:{
-        type:DataTypes.INTEGER,
-        defaultValue:0
+    score: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     },
-     submitted_at: {
+    submitted_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
     },

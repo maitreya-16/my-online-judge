@@ -34,9 +34,9 @@ async function updateDatabase(submission_id, status, message, failed_test_case, 
     leaderboardEntry[problemID] = score;
     leaderboardEntry.last_submission_time = new Date();
     leaderboardEntry.total_score = leaderboardEntry.total_score + (score - previousScore);
-    await leaderboardEntry.save();
   }
-
+  leaderboardEntry.total_submissions = (leaderboardEntry.total_submissions +1 );
+  await leaderboardEntry.save();
   return;
 }
 

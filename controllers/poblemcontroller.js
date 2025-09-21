@@ -1,13 +1,14 @@
 const Problem = require('../models/Problem');
 const ProblemSample = require('../models/ProblemSample');
+const sequelize = require('../config/database');
 
 // Create new Problem (with optional samples)
 exports.createProblem = async (req, res) => {
   try {
-    const { title, description,score,input_format,output_format,consraints,isjunior,time_limit,memory_limit,event_id,samples} = req.body;
+    const { title, description, score, input_format, output_format, consraints, isjunior, time_limit, memory_limit, event_id, samples } = req.body;
 
     // create problem first
-    const problem = await Problem.create({  title, description,score,input_format,output_format,consraints,isjunior,time_limit,memory_limit,event_id, });
+    const problem = await Problem.create({ title, description, score, input_format, output_format, consraints, isjunior, time_limit, memory_limit, event_id, });
     // const missingFields = problem.filter(field => !(field in req.body));
 
     // if (missingFields.length > 0) {
@@ -31,19 +32,20 @@ exports.createProblem = async (req, res) => {
     return res.status(201).json({ message: "Problem created", problem });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Failed to create problem"
-        , details: err.message
-     });
+    return res.status(500).json({
+      error: "Failed to create problem"
+      , details: err.message
+    });
   }
 };
 
 // Get all problems with their samples
 exports.getAllProblems = async (req, res) => {
-     
+
   try {
     const { event_id, isjunior } = req.user;
     const problems = await Problem.findAll({
-        where: { event_id, isjunior },
+      where: { event_id, isjunior },
       include: [{ model: ProblemSample, as: "samples" }]
     });
     return res.json(problems);
@@ -75,15 +77,15 @@ exports.addSample = async (req, res) => {
   try {
     const { id } = req.params; // problem ID
     const { input, output, explanation } = req.body;
-//     const data = req.body();
-// const missingFields = data.filter(field => !(field in req.body));
+    //     const data = req.body();
+    // const missingFields = data.filter(field => !(field in req.body));
 
-//     if (missingFields.length > 0) {
-//       return res.status(400).json({
-//         error: "Missing required fields",
-//         missing: missingFields
-//       });
-//     }
+    //     if (missingFields.length > 0) {
+    //       return res.status(400).json({
+    //         error: "Missing required fields",
+    //         missing: missingFields
+    //       });
+    //     }
 
     const problem = await Problem.findByPk(id);
     if (!problem) return res.status(404).json({ error: "Problem not found" });
@@ -211,7 +213,7 @@ exports.deleteSample = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deleted = await ProblemSample.destroy({ where: {id} });
+    const deleted = await ProblemSample.destroy({ where: { id } });
 
     if (!deleted) {
       return res.status(404).json({ error: "Sample not found" });
@@ -223,3 +225,42 @@ exports.deleteSample = async (req, res) => {
     return res.status(500).json({ error: "Failed to delete sample" });
   }
 };
+
+exports.getAllProblemsAccuracy = async (req, res) => {
+  try {
+    const isJunior = req.user.isjunior;   // boolean
+    const event_id = req.user.event_id;   // integer
+    const rows = await sequelize.query(`
+  SELECT 
+    p.id AS problem_id,
+    COUNT(DISTINCT s.team_id) AS total_attempted,  -- unique users who submitted
+    COUNT(DISTINCT CASE WHEN s.result = 'accepted' THEN s.team_id END) AS accepted_count, -- unique users who solved
+    CONCAT(
+      ROUND(
+        CASE WHEN COUNT(DISTINCT s.team_id) = 0 THEN 0
+             ELSE COUNT(DISTINCT CASE WHEN s.result = 'accepted' THEN s.team_id END) * 100.0 
+                  / COUNT(DISTINCT s.team_id)
+        END, 2
+      ), '%'
+    ) AS accuracy
+  FROM problems p
+  LEFT JOIN submissions s 
+    ON s.problem_id = p.id 
+    AND s.event_id = :eventId
+  WHERE p.isJunior = :isJunior
+  GROUP BY p.id
+  ORDER BY p.id;
+`, {
+      replacements: { isJunior, eventId: event_id },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    console.log(rows);
+
+
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error fetching problem accuracy:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}

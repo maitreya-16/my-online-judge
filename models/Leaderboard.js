@@ -46,17 +46,14 @@ const Leaderboard = sequelize.define("Leaderboard", {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
-  problem_5: {
+  total_submissions: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
-
   total_score: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
-
-
   last_submission_time: {
     type: DataTypes.DATE,
     allowNull: true,

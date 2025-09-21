@@ -27,8 +27,8 @@ Problem.hasMany(ProblemSample, { foreignKey: 'problem_id', as: 'samples' });
 ProblemSample.belongsTo(Problem, { foreignKey: 'problem_id' });
 
 // Problem ↔ Event relationships
-// Problem.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
-// Event.hasMany(Problem, { foreignKey: 'event_id', as: 'Problems' });
+Problem.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
+Event.hasMany(Problem, { foreignKey: 'event_id', as: 'Problems' });
 
 // // Submission ↔ Event relationships
 // Submission.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });

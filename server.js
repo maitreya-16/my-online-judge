@@ -26,9 +26,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 // Allow all origins
 app.use(cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials:true
 }));
 
 const server = http.createServer(app);
