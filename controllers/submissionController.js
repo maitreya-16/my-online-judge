@@ -34,7 +34,7 @@ try {
             problem_id,
             // team_id: user.team_id,
             code,
-            customTestcase: customTestcase || null,
+            customTestcase: customTestcase || "",
             language,
         };
 
@@ -58,7 +58,7 @@ exports.RunOnSystem = async (req, res) => {
     const runData = {
       submission_id,
       problem_id,
-      customTestcase: customTestcase || null,
+      customTestcase: customTestcase || "",
     };
 
     await enqueueTask("runSystemQueue", runData);

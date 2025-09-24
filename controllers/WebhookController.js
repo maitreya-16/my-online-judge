@@ -104,7 +104,7 @@ exports.SystemWebhook = async (req, res) => {
 exports.SubmitWebhook = async (req, res) => {
   try {
     console.log(req.body);
-    const { submission_id, status, message, failed_test_case, score ,problem_id} =
+    const { submission_id, status, message, total_test_case, failed_test_case, score } =
       req.body;
 
     if (!submission_id || !status) {
@@ -128,6 +128,8 @@ exports.SubmitWebhook = async (req, res) => {
       status,
       message,
       score,
+      total_test_case,
+      failed_test_case,
       timestamp: new Date().toISOString(),
     });
 

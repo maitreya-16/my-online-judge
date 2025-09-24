@@ -157,7 +157,7 @@ def execute_code_in_docker(submission_id, work_dir,run_cmd, input_file, image, t
     
 
 
-def run_code(submission_id , problem_id , code , language ,inputData=None):
+def run_code(submission_id , problem_id , code , language ,inputData=""):
     
     try:
         code = decode(code)
@@ -211,7 +211,7 @@ def run_code(submission_id , problem_id , code , language ,inputData=None):
         elif language == 'cpp':
             run_cmd = config["run_command"].format(exec_name=exec_name)
         else:
-            run_cmd = config["run_command"].format(filename=exec_name)
+            run_cmd = config["run_command"].format(filename=filename)
         
 
         exec_result = execute_code_in_docker(
@@ -259,7 +259,8 @@ def submit (submission_id , problem_id , code , language ):
             result = {
                 "status":"accepted",
                 "message":None,
-                "failed_test_case":None,
+                "failed_test_case":0,
+                "total_test_case":0,
                 "score":0
             }
 
@@ -309,6 +310,8 @@ def submit (submission_id , problem_id , code , language ):
             logging.info("Compilation Successfull")
 
             test_inputs,expected_outputs = get_cached_testcases(problem_id)
+
+            result["total_test_case"]=len(test_inputs)
 
             logging.info("Catching Successfull")
             logging.info("working dir : %s",work_dir)
@@ -364,7 +367,7 @@ def submit (submission_id , problem_id , code , language ):
 
                 logging.info("We are after execute_code_in_docker %s",exec_result["status"])
                 logging.info("user_output : %s",exec_result.get("user_output"))
-            result.update({"score":len(test_inputs)*10})
+            result.update({"score":len(test_inputs)*10,})
             return result
         
         except Exception as e:

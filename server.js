@@ -20,22 +20,26 @@ app.use(cookieParser())
 const cors = require("cors");
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-? process.env.ALLOWED_ORIGINS.split(',') 
-: ["http://localhost:5173", "http://localhost:3000"];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ["http://localhost:5173", "http://localhost:3000"];
 
 // Allow all origins
 app.use(cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials:true
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
 const server = http.createServer(app);
-(async () => {
-    await syncDB();
-})();
+initSocket(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+
 // Routes
 app.get("/", (req, res) => res.send("🚀 Online Judge API is running..."));
 app.use("/admin", adminRoutes);
@@ -43,22 +47,16 @@ app.use("/user", userRoutes);
 app.use("/problems", problemroutes);
 app.use("/result", resultRoutes);
 app.use("/leaderboard", leaderboardRoutes);
-app.use("/submission",submissionRoutes);
-app.use("/webhook",webhookRoutes);
+app.use("/submission", submissionRoutes);
+app.use("/webhook", webhookRoutes);
+
+
 const PORT = process.env.PORT || 3000;
 
 sequelize.sync()
   .then(() => {
     console.log("✅ Database connected & synced");
-
-    initSocket(server, {
-      cors: {
-        origin: "*",
-        credentials: true,
-      },
-    });
-
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
   })

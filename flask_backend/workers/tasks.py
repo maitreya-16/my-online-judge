@@ -77,6 +77,7 @@ def submit_code(data):
         'status':result.get('status'),
         'message':result.get('message'),
         'failed_test_case':result.get('failed_test_case'),
+        'total_test_case':result.get('total_test_case'),
         'score':result.get('score'),
     }
     print("Webhook Data:", webhook_data)

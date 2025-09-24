@@ -157,10 +157,10 @@ exports.RegisterTeam = async (req, res) => {
 exports.Login = async (req, res) => {
     try {
         const { username, password, event_id ,isjunior} = req.body;
-
+        let isEnded = false;
         // Input validation
-        if (!username || !password || !event_id) {
-            return res.status(400).json({ error: 'Username, password, and event_id are required' });
+        if (!username || isjunior === undefined || !password || !event_id) {
+            return res.status(400).json({ error: 'Username, password, and isjunior are required' });
         }
 
         const event = await Event.findByPk(event_id);
@@ -170,28 +170,27 @@ exports.Login = async (req, res) => {
 
         const now = new Date();
         if (!event.start_time || now < event.start_time) {
-            return res.status(403).json({ error: "Event has not started yet" });
+            return res.status(400).json({ error: "Event has not started yet" });
         }
         if (now > event.end_time) {
-            return res.status(403).json({ error: "Event has ended" });
+            // return res.status(501).json({ error: "Event has ended" });
+            isEnded=true;
         }
         let user;
 
             user = await User.findOne({ where: { username } });
 
-            if(user.isjunior!=isjunior){
-                return res.status(404).json({ error: "User not found" });
+            if(user && user.isjunior!=isjunior){
+                return res.status(400).json({ error: "User not found" });
             }
 
             if (!user || (event_id === 1 && user.ncc===null) || (event_id===2 && user.rc===null)) {
-                return res.status(404).json({ error: "User not found. Please register first" });
+                return res.status(400).json({ error: "User not found. Please register first" });
             }
-
-
         const validPassword = await bcrypt.compare(password, user.password);
 
         if (!validPassword) {
-            return res.status(401).json({ error: "Invalid username or password" });
+            return res.status(400).json({ error: "Invalid username or password" });
         }
 
         const token = jwt.sign(
@@ -229,8 +228,16 @@ exports.Login = async (req, res) => {
         });
 
         console.log('Response headers:', res.getHeaders());
+        if(isEnded){ 
+            return res.status(501).json({ status:"ended",message: "Event has ended",user: {
+                username: user.username,
+                event_id: user.event_id,
+                isjunior: user.isjunior,
+                team_id: event_id===1?user.ncc:user.rc
+            }});
+        }
         return res.status(200).json({
-            message: "User logged in successfully",
+            message: "Logged in successfully",
             user: {
                 username: user.username,
                 event_id: user.event_id,
@@ -240,7 +247,7 @@ exports.Login = async (req, res) => {
 
     } catch (error) {
         console.error("Error logging in:", error);
-        res.status(500).json({ error: "Error logging in", details: error.message });
+        res.status(400).json({ error: "Error logging in", details: error.message });
     }
 };
 exports.GetProfile = async(req,res)=>{
@@ -263,6 +270,19 @@ exports.Logout = async (req,res)=>{
         res.status(500).json({ error: "Error logging out", details: error.message });
     }
 };
+// exports.LogoutandBan = async (req,res)=>{
+//     try{
+//         res.clearCookie("token");
+        
+        
+
+//         res.status(200).json({message:"User logged out successfully"});
+//     }
+//     catch(error){
+//         console.error("Error logging out:", error);
+//         res.status(500).json({ error: "Error logging out", details: error.message });
+//     }
+// };
 
 exports.getAllEvents = async (req, res) => {
     try {
