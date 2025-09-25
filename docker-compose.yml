@@ -28,7 +28,11 @@ services:
     image: maitreya16/flask-windows:latest
     container_name: flask-worker
     restart: always
-    command: celery -A workers.tasks worker --loglevel=info
+    command: >
+      celery -A workers.tasks worker
+            --loglevel=${LOG_LEVEL:-DEBUG}
+            --concurrency=3
+            --queues=submitQueue,runQueue,runSystemQueue
     depends_on:
       - redis
     environment:

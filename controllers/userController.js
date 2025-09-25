@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Team } = require("../models");
+const { User, Team, Submission } = require("../models");
 require("dotenv").config();
 const Event = require("../models/Event");
 exports.registerUser = async (req, res) => {
@@ -268,6 +268,19 @@ exports.Logout = async (req,res)=>{
     catch(error){
         console.error("Error logging out:", error);
         res.status(500).json({ error: "Error logging out", details: error.message });
+    }
+};
+exports.gethistory = async (req,res)=>{
+    try {
+        const team_id = req.user.team_id;
+        const submissions = await Submission.findAll({
+            where: { team_id },
+            order: [['submitted_at', 'DESC']]
+        });
+        res.status(200).json(submissions);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Error fetching submission history', details: error.message });
     }
 };
 // exports.LogoutandBan = async (req,res)=>{

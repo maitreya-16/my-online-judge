@@ -19,7 +19,13 @@ app = Celery(
     broker=REDIS_BROKER_URL,
     backend=REDIS_BACKEND_URL,
 )
-
+app.conf.update(
+    broker_heartbeat=10,
+    broker_connection_timeout=30,
+    worker_max_tasks_per_child=100,
+    worker_prefetch_multiplier=1,
+    task_acks_late=True,
+)
 # specify ur express port
 
 
@@ -39,7 +45,10 @@ def send_webhook_result(url, data):
     except Exception as e:
         print(f"[Webhook] Failed to send: {e}")
 
-@app.task(name="tasks.run_code")
+
+# ─── Task: Run System Code ──────────────────────────────────────────────
+
+@app.task(name="tasks.run_code", queue="runQueue")
 def run_code(data):
     # print("Running code...")
     result = run(
@@ -63,7 +72,9 @@ def run_code(data):
     return result
 
 
-@app.task(name="tasks.submit_code")
+# ─── Task: Code Submission ──────────────────────────────────────────────
+
+@app.task(name="tasks.submit_code", queue="submitQueue")
 def submit_code(data):
     print("Submitting code...")
     result = submit(
@@ -84,7 +95,9 @@ def submit_code(data):
     send_webhook_result(WEBHOOK_URL_SUBMIT, webhook_data)
     return (result)
 
-@app.task(name="tasks.run_system_code")
+# ─── Task: Run System Code ──────────────────────────────────────────────
+
+@app.task(name="tasks.run_system_code", queue="runSystemQueue")
 def run_system_code(data):
     # if data.get('customTestcase'):
     #     data['customTestcase'] = decode(data['customTestcase'])
@@ -107,5 +120,3 @@ def run_system_code(data):
     }
     send_webhook_result(WEBHOOK_URL_SYSTEM, webhook_data)
     return result
-
-    
