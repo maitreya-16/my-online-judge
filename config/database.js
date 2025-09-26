@@ -1,22 +1,38 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-const DB_HOST = process.env.DB_HOST;
-const DB_PORT = process.env.DB_PORT || 5432;
-const DB_USER = process.env.DB_USER;
-const DB_PASS = process.env.DB_PASSWORD;  // Changed from DB_PASS to DB_PASSWORD to match common .env convention
-const DB_NAME = process.env.DB_NAME;
-const DB_DIALECT = process.env.DB_DIALECT || 'postgres';
+// const DB_HOST = process.env.DB_HOST;
+// const DB_PORT = process.env.DB_PORT || 5432;
+// const DB_USER = process.env.DB_USER;
+// const DB_PASS = process.env.DB_PASSWORD;  // Changed from DB_PASS to DB_PASSWORD to match common .env convention
+// const DB_NAME = process.env.DB_NAME;
+// const DB_DIALECT = process.env.DB_DIALECT || 'postgres';
 
-const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
-  host: DB_HOST,
-  port: DB_PORT,
-  dialect: DB_DIALECT,
+// const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
+//   host: DB_HOST,
+//   port: DB_PORT,
+//   dialect: DB_DIALECT,
+//   logging: false,
+//   define: {
+//     timestamps: true, // Enable timestamps by default for all models
+//     underscored: true // Use snake_case instead of camelCase for column names
+//   }
+// });
+
+const sequelize = new Sequelize(process.env.DB_URL, {
+  dialect: 'postgres',
+  protocol: 'postgres',
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // For self-signed certs; set to true for production with trusted CA
+    },
+  },
   define: {
-    timestamps: true, // Enable timestamps by default for all models
-    underscored: true // Use snake_case instead of camelCase for column names
-  }
+    timestamps: true,
+    underscored: true,
+  },
 });
 
 // Test connection function

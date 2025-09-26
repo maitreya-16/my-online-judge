@@ -2,20 +2,14 @@ version: "3.9"
 
 services:
   backend:
-    image: maitreya16/node-backend:latest  
+    image: node-backend:latest  
     container_name: node-backend
     ports:
       - "3000:3000"
     environment:
       JWT_SECRET: your_super_secret_key
       NODE_ENV: production
-      DB_HOST: postgres
-      DB_USER: postgres
-      DB_PASSWORD: mysecretpass
-      DB_NAME: postgres
-    depends_on:
-      - postgres
-
+      DB_URL: postgresql://neondb_owner:npg_4vzRJqHVSu9a@ep-bold-bush-aeoqgqq0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
   server:
     image: maitreya16/flask-windows:latest
     container_name: flask-server
@@ -47,28 +41,7 @@ services:
     working_dir: /app
     volumes:
       - ./submissions:/app/submissions:z
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  postgres:
-    image: postgres:15
-    container_name: my-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpass
-      POSTGRES_DB: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  adminer:
-    image: adminer
-    container_name: my-adminer
-    restart: always
-    ports:
-      - "8080:8080"
-  
+      - /var/run/docker.sock:/var/run/docker.sock  
   redis:
     image: redis:latest
     container_name: my-redis
@@ -78,5 +51,4 @@ services:
       - redisdata:/data
 
 volumes:
-  pgdata:
   redisdata:
