@@ -56,7 +56,7 @@ const PORT = process.env.PORT || 3000;
 sequelize.sync()
   .then(() => {
     console.log("✅ Database connected & synced");
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
   })
