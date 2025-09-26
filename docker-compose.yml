@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    image: node-backend:latest  
+    image: maitreya16/node-backend:latest  
     container_name: node-backend
     ports:
       - "3000:3000"
