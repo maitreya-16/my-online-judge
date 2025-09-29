@@ -5,10 +5,10 @@ const sequelize = require('../config/database');
 // Create new Problem (with optional samples)
 exports.createProblem = async (req, res) => {
   try {
-    const { title, description, score, input_format, output_format, consraints, isjunior, time_limit, memory_limit, event_id, samples } = req.body;
+    const { title, description, score, input_format, output_format, constraints, isjunior, time_limit, memory_limit, event_id, samples } = req.body;
 
     // create problem first
-    const problem = await Problem.create({ title, description, score, input_format, output_format, consraints, isjunior, time_limit, memory_limit, event_id, });
+    const problem = await Problem.create({ title, description, score, input_format, output_format, constraints, isjunior, time_limit, memory_limit, event_id, });
     // const missingFields = problem.filter(field => !(field in req.body));
 
     // if (missingFields.length > 0) {
@@ -226,41 +226,126 @@ exports.deleteSample = async (req, res) => {
   }
 };
 
+// exports.getAllProblemsAccuracy = async (req, res) => {
+//   try {
+//     const isJunior = req.user.isjunior;   // boolean
+//     const event_id = req.user.event_id;   // integer
+//     // unique correct submissions / unique total submissions
+//     const rows = await sequelize.query(`
+//   SELECT 
+//     p.id AS problem_id,
+//     COUNT(DISTINCT s.team_id) AS total_attempted,  -- unique users who submitted
+//     COUNT(DISTINCT CASE WHEN s.result = 'accepted' THEN s.team_id END) AS accepted_count, -- unique users who solved
+//     CONCAT(
+//       ROUND(
+//         CASE WHEN COUNT(DISTINCT s.team_id) = 0 THEN 0
+//              ELSE COUNT(DISTINCT CASE WHEN s.result = 'accepted' THEN s.team_id END) * 100.0 
+//                   / COUNT(DISTINCT s.team_id)
+//         END, 2
+//       ), '%'
+//     ) AS accuracy
+//   FROM problems p
+//   LEFT JOIN submissions s 
+//     ON s.problem_id = p.id 
+//     AND s.event_id = :eventId
+//   WHERE p.isJunior = :isJunior
+//   GROUP BY p.id
+//   ORDER BY p.id;
+// `, {
+//       replacements: { isJunior, eventId: event_id },
+//       type: sequelize.QueryTypes.SELECT
+//     });
+
+//     console.log(rows);
+
+
+//     return res.status(200).json(rows);
+//   } catch (error) {
+//     console.error("Error fetching problem accuracy:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// }
+// exports.getAllProblemsAccuracy = async (req, res) => {
+//   try {
+//     const isJunior = req.user.isjunior;   // boolean
+//     const event_id = req.user.event_id;   // integer
+
+//     // Query to get problem accuracy segregated by team_id for the specific event
+//     const rows = await sequelize.query(`
+//       SELECT 
+//         p.id AS problem_id,
+//         COUNT(s.team_id) AS total_attempted,  -- total submissions per team
+//         COUNT(CASE WHEN s.result = 'accepted' THEN 1 END) AS accepted_count, -- accepted submissions per team
+//         CONCAT(
+//           ROUND(
+//             CASE WHEN COUNT(s.team_id) = 0 THEN 0
+//                  ELSE COUNT(CASE WHEN s.result = 'accepted' THEN 1 END) * 100.0 
+//                       / COUNT(s.team_id)
+//             END, 2
+//           ), '%'
+//         ) AS accuracy
+//       FROM problems p
+//       LEFT JOIN submissions s 
+//         ON s.problem_id = p.id 
+//         AND s.event_id = :eventId
+//       WHERE p.isJunior = :isJunior
+//         AND p.event_id = :eventId   -- Filter to only include problems for the specific event
+//       GROUP BY p.id, s.team_id
+//       ORDER BY p.id, s.team_id;
+//     `, {
+//       replacements: { isJunior, eventId: event_id },
+//       type: sequelize.QueryTypes.SELECT
+//     });
+
+//     // If no rows are returned, return an empty array
+//     if (rows.length === 0) {
+//       return res.status(200).json([]);
+//     }
+
+//     console.log(rows);
+//     return res.status(200).json(rows);
+//   } catch (error) {
+//     console.error("Error fetching problem accuracy:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
 exports.getAllProblemsAccuracy = async (req, res) => {
   try {
     const isJunior = req.user.isjunior;   // boolean
     const event_id = req.user.event_id;   // integer
+
+    // Query to calculate accuracy = total accepted submissions / total submissions per problem
     const rows = await sequelize.query(`
-  SELECT 
-    p.id AS problem_id,
-    COUNT(DISTINCT s.team_id) AS total_attempted,  -- unique users who submitted
-    COUNT(DISTINCT CASE WHEN s.result = 'accepted' THEN s.team_id END) AS accepted_count, -- unique users who solved
-    CONCAT(
-      ROUND(
-        CASE WHEN COUNT(DISTINCT s.team_id) = 0 THEN 0
-             ELSE COUNT(DISTINCT CASE WHEN s.result = 'accepted' THEN s.team_id END) * 100.0 
-                  / COUNT(DISTINCT s.team_id)
-        END, 2
-      ), '%'
-    ) AS accuracy
-  FROM problems p
-  LEFT JOIN submissions s 
-    ON s.problem_id = p.id 
-    AND s.event_id = :eventId
-  WHERE p.isJunior = :isJunior
-  GROUP BY p.id
-  ORDER BY p.id;
-`, {
+      SELECT 
+        p.id AS problem_id,
+        COUNT(s.id) AS total_submissions,  -- total submissions for the problem
+        COUNT(CASE WHEN s.result = 'accepted' THEN 1 END) AS accepted_submissions, -- accepted submissions
+        CONCAT(
+          ROUND(
+            CASE WHEN COUNT(s.id) = 0 THEN 0
+                 ELSE COUNT(CASE WHEN s.result = 'accepted' THEN 1 END) * 100.0 
+                      / COUNT(s.id)
+            END, 2
+          ), '%'
+        ) AS accuracy
+      FROM problems p
+      LEFT JOIN submissions s 
+        ON s.problem_id = p.id 
+        AND s.event_id = :eventId
+      WHERE p.isjunior = :isJunior
+        AND p.event_id = :eventId
+      GROUP BY p.id
+      ORDER BY p.id;
+    `, {
       replacements: { isJunior, eventId: event_id },
       type: sequelize.QueryTypes.SELECT
     });
-
-    console.log(rows);
-
 
     return res.status(200).json(rows);
   } catch (error) {
     console.error("Error fetching problem accuracy:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-}
+};
+

@@ -353,7 +353,7 @@ def submit (submission_id , problem_id , code , language ):
 
                 # print("Redis expected_output : ",expected_output)
                 # print("docker_output : ",exec_result)
-                exec_result["user_output"]=exec_result["user_output"].replace('\n','').strip()
+                # exec_result["user_output"]=exec_result["user_output"].replace('\n','').strip()
                 # print('dokcer output after replacing \\n',exec_result["user_output"])
 
                 if exec_result["user_output"]!=expected_output.strip():

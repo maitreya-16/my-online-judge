@@ -17,7 +17,7 @@ const Submission = sequelize.define('Submission', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'problems', // lowercase plural
+            model: 'Problems', // lowercase plural
             key: 'id'
         },
         onDelete: "CASCADE",
@@ -27,7 +27,7 @@ const Submission = sequelize.define('Submission', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'events', // lowercase plural
+            model: 'Events', // lowercase plural
             key: 'id'
         },
         onDelete: "CASCADE",

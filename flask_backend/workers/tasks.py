@@ -116,7 +116,7 @@ def run_system_code(data):
         'submission_id': data['submission_id'],
         'status': result.get('status'),
         'message': result.get('message'),
-        'expected_output': result.get('expected_output')
+        'user_output':result.get('user_output')
     }
     send_webhook_result(WEBHOOK_URL_SYSTEM, webhook_data)
     return result

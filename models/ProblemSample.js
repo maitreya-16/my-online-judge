@@ -9,7 +9,7 @@ const ProblemSample = sequelize.define('ProblemSample', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'problems', // lowercase plural
+            model: 'Problems', // lowercase plural
             key: 'id'
         }
     },

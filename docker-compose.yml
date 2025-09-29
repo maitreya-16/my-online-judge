@@ -1,38 +1,38 @@
 version: "3.9"
 
 services:
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    command: >
-      certonly --webroot -w /var/www/certbot
-      --keep-until-expiring --email maitreyavaidyam@gmail.com
-      -d nccbackend.credenz.co.in --agree-tos
-    networks: [judge_net]
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    depends_on:
-      - backend
-    networks: [judge_net]
+  # certbot:
+  #   image: certbot/certbot
+  #   container_name: certbot
+  #   volumes:
+  #     - ./certbot/conf:/etc/letsencrypt
+  #     - ./certbot/www:/var/www/certbot
+  #   command: >
+  #     certonly --webroot -w /var/www/certbot
+  #     --keep-until-expiring --email maitreyavaidyam@gmail.com
+  #     -d nccbackend.credenz.co.in --agree-tos
+  #   networks: [judge_net]
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  #     - ./certbot/conf:/etc/letsencrypt
+  #     - ./certbot/www:/var/www/certbot
+  #   depends_on:
+  #     - backend
+  #   networks: [judge_net]
   backend:
     image: maitreya16/node-backend:latest  
     container_name: node-backend
     ports:
       - "3000:3000"
     environment:
-      COOKIE_DOMAIN: 34.100.169.196
+      # COOKIE_DOMAIN: 34.100.169.196
       JWT_SECRET: your_super_secret_key
       NODE_ENV: production
       DB_URL: postgresql://neondb_owner:npg_4vzRJqHVSu9a@ep-bold-bush-aeoqgqq0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
@@ -80,6 +80,9 @@ services:
     volumes:
       - redisdata:/data
     networks: [judge_net]
+
+networks: 
+  judge_net:
 
 volumes:
   redisdata:

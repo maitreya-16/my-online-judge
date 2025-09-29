@@ -41,7 +41,7 @@ const Problem = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "events", // lowercase plural
+        model: "Events", // lowercase plural
         key: "id",
       },
       onDelete: "CASCADE",

@@ -21,16 +21,17 @@ const Leaderboard = require('./Leaderboard');
 // // Submission ↔ Problem relationships
 // Submission.belongsTo(Problem, { foreignKey: 'problem_id', as: 'Problem' });
 // Problem.hasMany(Submission, { foreignKey: 'problem_id', as: 'Submissions' });
+Problem.belongsTo(Event, { foreignKey: "event_id", as: "Event" });
+Event.hasMany(Problem, { foreignKey: "event_id", as: "Problems" });
 
-// // Problem ↔ ProblemSample relationships
+
+// Problem ↔ ProblemSample relationships
 Problem.hasMany(ProblemSample, { foreignKey: 'problem_id', as: 'samples' });
 ProblemSample.belongsTo(Problem, { foreignKey: 'problem_id' });
 
 // Problem ↔ Event relationships
-Problem.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
-Event.hasMany(Problem, { foreignKey: 'event_id', as: 'Problems' });
 
-// // Submission ↔ Event relationships
+// Submission ↔ Event relationships
 // Submission.belongsTo(Event, { foreignKey: 'event_id', as: 'Event' });
 // Event.hasMany(Submission, { foreignKey: 'event_id', as: 'Submissions' });
 

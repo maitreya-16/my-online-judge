@@ -32,7 +32,7 @@ Thumbs.db
 
 # Docker files you don't want in the image
 docker-compose.yml
-.env
-.env.*
+# .env
+# .env.*
 
 flask_backend/

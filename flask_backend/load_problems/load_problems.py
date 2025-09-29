@@ -7,8 +7,8 @@ r = redis.Redis(host=REDIS_HOST, db=1, port=REDIS_PORT, decode_responses=True)
 def load_data(pid, path):
     i = 0
     while True:
-        input_path = os.path.join(path, f"input_{i}.txt")
-        output_path = os.path.join(path, f"output_{i}.txt")
+        input_path = os.path.join(path, f"input{i}.txt")
+        output_path = os.path.join(path, f"output{i}.txt")
 
         if not os.path.exists(input_path) or not os.path.exists(output_path):
             print(f"Input/output finished for {pid}")

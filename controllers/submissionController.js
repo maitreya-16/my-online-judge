@@ -53,7 +53,7 @@ exports.RunOnSystem = async (req, res) => {
     const { problem_id, customTestcase } = req.body;
     const { problem, event } = req;
 
-    const submission_id = `run_${Date.now()}`;
+    const submission_id = `system_${Date.now()}`;
 
     const runData = {
       submission_id,

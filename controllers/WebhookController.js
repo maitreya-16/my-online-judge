@@ -16,7 +16,7 @@ async function updateDatabase(submission_id, status, message, failed_test_case, 
   }
 
   const problem_id = updatedSubmission.problem_id;
-  const problemID = `problem_${problem_id}`;
+  const problemID = `problem_${problem_id%4===0?4:problem_id%4}`;
   const team_id = updatedSubmission.team_id;
   // Find leaderboard entry
   const leaderboardEntry = await Leaderboard.findOne({ 
@@ -81,7 +81,7 @@ exports.RunWebhook = async (req, res) => {
 
 exports.SystemWebhook = async (req, res) => {
   try {
-    const { submission_id, status, message, expected_output } = req.body;
+    const { submission_id, status, message, expected_output,user_output } = req.body;
 
     console.log(`System Webhook for ${submission_id} — ${status}`);
     if (status !== "executed_successfully") console.log(`Message: ${message}`);
@@ -89,6 +89,7 @@ exports.SystemWebhook = async (req, res) => {
     getIO().to(String(submission_id)).emit("result", {
       type: "system",
       submission_id,
+      user_output,
       status,
       message,
       expected_output,

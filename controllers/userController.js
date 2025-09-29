@@ -184,7 +184,7 @@ exports.Login = async (req, res) => {
                 return res.status(400).json({ error: "User not found" });
             }
 
-            if (!user || (event_id === 1 && user.ncc===null) || (event_id===2 && user.rc===null)) {
+            if (!user || (event_id === 1 && user.ncc===0) || (event_id===2 && user.rc===0)) {
                 return res.status(400).json({ error: "User not found. Please register first" });
             }
         const validPassword = await bcrypt.compare(password, user.password);
@@ -208,7 +208,7 @@ exports.Login = async (req, res) => {
         // Get cookie settings from environment variables
         const domain = process.env.COOKIE_DOMAIN || 'localhost';
         const isSecure = process.env.COOKIE_SECURE === 'true';
-        const sameSite = process.env.COOKIE_SAME_SITE || 'Lax';
+        const sameSite = process.env.COOKIE_SAME_SITE || 'None';
 
         console.log('Cookie settings:', {
             domain,
@@ -219,12 +219,12 @@ exports.Login = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,    // Prevents JavaScript access
-            secure: isSecure,  // Set via environment variable
-            sameSite: sameSite, // Set via environment variable
-            domain: domain,    // Set domain based on environment
+            secure: true,  // Set via environment variable
+            sameSite: "None", // Set via environment variable
+            // domain: domain,    // Set domain based on environment
             path: '/',         // Cookie available for all paths
             maxAge: 2 * 60 * 60 * 1000, // 2 hours
-            credentials: 'include' // Required for cross-origin requests
+            // credentials: 'include' // Required for cross-origin requests
         });
 
         console.log('Response headers:', res.getHeaders());

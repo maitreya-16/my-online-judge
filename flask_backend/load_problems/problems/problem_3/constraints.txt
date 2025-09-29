@@ -1,0 +1,1 @@
+2 <= n <= 1*10^5, edges form a tree; sum of n across a single input file <= 1*10^5

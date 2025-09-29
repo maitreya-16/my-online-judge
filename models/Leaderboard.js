@@ -12,7 +12,7 @@ const Leaderboard = sequelize.define("Leaderboard", {
   event_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: "events", key: "id" },
+    references: { model: "Events", key: "id" },
     onDelete: "CASCADE",
   },
 
