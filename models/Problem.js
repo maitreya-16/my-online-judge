@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const Problem = sequelize.define(
-  "Problem",
+  "problem",
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     title: { type: DataTypes.STRING, allowNull: false },
@@ -41,11 +41,9 @@ const Problem = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Events", // lowercase plural
+        model: "events", // lowercase plural
         key: "id",
       },
-      onDelete: "CASCADE",
-      onUpdate: "CASCADE",
     },
   },
   {

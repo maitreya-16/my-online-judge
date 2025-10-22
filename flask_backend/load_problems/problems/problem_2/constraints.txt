@@ -1,1 +1,1 @@
-1 <= t <= 1000, 1 <= n <= 50 (for naive), 1 <= nums[i] <= 100, 1 <= k <= n*(n+1)/2
+1 <= |s| <= 10^5, s contains lowercase English letters only

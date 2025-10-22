@@ -31,15 +31,20 @@ app.conf.update(
 
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
 
+# WEBHOOK_URL_RUN = f'https://abhitime.credenz.co.in/webhook/run'
+# WEBHOOK_URL_SUBMIT = f'https://abhitime.credenz.co.in/webhook/submit'
+# WEBHOOK_URL_SYSTEM = f'https://abhitime.credenz.co.in/webhook/system'
+
 WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
 WEBHOOK_URL_SUBMIT = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/submit'
 WEBHOOK_URL_SYSTEM = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/system'
+
 
 def send_webhook_result(url, data):
     """POST result to webhook endpoint."""
     try:
         print(f"[Webhook] Sending to {url}")
-        r = requests.post(url, json=data, timeout=5)
+        r = requests.post(url, json=data, timeout=10)
         r.raise_for_status()
         print("[Webhook] Sent successfully.")
     except Exception as e:

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Submission = sequelize.define('Submission', {
+const Submission = sequelize.define('submission', {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     team_id: {
         type: DataTypes.INTEGER,
@@ -10,28 +10,23 @@ const Submission = sequelize.define('Submission', {
         //         model: 'teams', // lowercase plural
         //         key: 'id'
         //     },
-        //        onDelete: "CASCADE",
-        //   onUpdate: "CASCADE",
+
     },
     problem_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Problems', // lowercase plural
+            model: 'problems', // lowercase plural
             key: 'id'
         },
-        onDelete: "CASCADE",
-        onUpdate: "CASCADE",
     },
     event_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Events', // lowercase plural
+            model: 'events', // lowercase plural
             key: 'id'
         },
-        onDelete: "CASCADE",
-        onUpdate: "CASCADE",
     },
     code: { type: DataTypes.TEXT, allowNull: false },
     language: { type: DataTypes.STRING, allowNull: false },

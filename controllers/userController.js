@@ -6,10 +6,10 @@ const Event = require("../models/Event");
 exports.registerUser = async (req, res) => {
     try {
         console.log(req.body); // Debug incoming request body
-        const { username, email, password, isjunior, event_id ,role} = req.body;
+        const { username, email, password, isjunior, event_id, role } = req.body;
 
         // Input validation
-        if (!username || !email || !password || isjunior === undefined ) {
+        if (!username || !email || !password || isjunior === undefined) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
@@ -73,8 +73,8 @@ exports.registerUser = async (req, res) => {
         await newUser.update({ team_id: soloTeam.id });
         await soloTeam.update({ user1_id: newUser.id });
 
-        res.status(201).json({ 
-            message: 'User registered successfully!', 
+        res.status(201).json({
+            message: 'User registered successfully!',
             user: {
                 username: newUser.username,
                 email: newUser.email,
@@ -86,8 +86,8 @@ exports.registerUser = async (req, res) => {
     } catch (error) {
         console.error('Registration error:', error);
         if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({ 
-                error: 'Validation error', 
+            return res.status(400).json({
+                error: 'Validation error',
                 details: error.errors.map(e => e.message)
             });
         }
@@ -96,7 +96,7 @@ exports.registerUser = async (req, res) => {
 };
 exports.RegisterTeam = async (req, res) => {
     try {
-        const { username1, team_name, username2, event_id} = req.body;
+        const { username1, team_name, username2, event_id } = req.body;
 
         //  Find both users
         const user1 = await User.findOne({ where: { username: username1, event_id } });
@@ -156,7 +156,7 @@ exports.RegisterTeam = async (req, res) => {
 
 exports.Login = async (req, res) => {
     try {
-        const { username, password, event_id ,isjunior} = req.body;
+        const { username, password, event_id, isjunior } = req.body;
         let isEnded = false;
         // Input validation
         if (!username || isjunior === undefined || !password || !event_id) {
@@ -174,19 +174,19 @@ exports.Login = async (req, res) => {
         }
         if (now > event.end_time) {
             // return res.status(501).json({ error: "Event has ended" });
-            isEnded=true;
+            isEnded = true;
         }
         let user;
 
-            user = await User.findOne({ where: { username } });
+        user = await User.findOne({ where: { username } });
 
-            if(user && user.isjunior!=isjunior){
-                return res.status(400).json({ error: "User not found" });
-            }
+        if (user && user.isjunior != isjunior) {
+            return res.status(400).json({ error: "User not found" });
+        }
 
-            if (!user || (event_id === 1 && user.ncc===0) || (event_id===2 && user.rc===0)) {
-                return res.status(400).json({ error: "User not found. Please register first" });
-            }
+        if (!user || (event_id === 1 && user.ncc === 0) || (event_id === 2 && user.rc === 0)) {
+            return res.status(400).json({ error: "User not found. Please register first" });
+        }
         const validPassword = await bcrypt.compare(password, user.password);
 
         if (!validPassword) {
@@ -199,7 +199,7 @@ exports.Login = async (req, res) => {
                 username: user.username,
                 event_id: event_id,
                 isjunior: user.isjunior,
-                team_id: event_id===1?user.ncc:user.rc
+                team_id: event_id === 1 ? user.ncc : user.rc
             },
             process.env.JWT_SECRET,
             { expiresIn: "2h" }
@@ -228,16 +228,20 @@ exports.Login = async (req, res) => {
         });
 
         console.log('Response headers:', res.getHeaders());
-        if(isEnded){ 
-            return res.status(501).json({ status:"ended",message: "Event has ended",user: {
-                username: user.username,
-                event_id: user.event_id,
-                isjunior: user.isjunior,
-                team_id: event_id===1?user.ncc:user.rc
-            }});
+        if (isEnded) {
+            return res.status(501).json({
+                status: "ended", message: "Event has ended", user: {
+                    isVerified:true,
+                    username: user.username,
+                    event_id: user.event_id,
+                    isjunior: user.isjunior,
+                    team_id: event_id === 1 ? user.ncc : user.rc
+                }
+            });
         }
         return res.status(200).json({
             message: "Logged in successfully",
+            isVerified:true,
             user: {
                 username: user.username,
                 event_id: user.event_id,
@@ -250,27 +254,44 @@ exports.Login = async (req, res) => {
         res.status(400).json({ error: "Error logging in", details: error.message });
     }
 };
-exports.GetProfile = async(req,res)=>{
-    try{
-        const user = await User.findByPk(req.user.id,{attributes:{exclude:['password']}});
-        return res.status(200).json({user});
-    }catch(error){
+exports.GetProfile = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.user.id, { attributes: { exclude: ['password'] } });
+        return res.status(200).json({ user });
+    } catch (error) {
         console.error("Error fetching user profile:", error);
         res.status(500).json({ error: "Error fetching user profile", details: error.message });
     }
 };
 
-exports.Logout = async (req,res)=>{
-    try{
-        res.clearCookie("token");
-        res.status(200).json({message:"User logged out successfully"});
+// exports.Logout = async (req,res)=>{
+//     try{
+//         res.clearCookie("token");
+//         res.status(200).json({message:"User logged out successfully"});
+//     }
+//     catch(error){
+//         console.error("Error logging out:", error);
+//         res.status(500).json({ error: "Error logging out", details: error.message });
+//     }
+// };
+
+exports.Logout = async (req, res) => {
+    try {
+        res.clearCookie("token", {
+            httpOnly: true,
+            sameSite: "None",
+            secure: true,
+            path: '/'   // must match how you set it!
+        });
+        return res.status(200).json({ message: "User logged out successfully" });
     }
-    catch(error){
+    catch (error) {
         console.error("Error logging out:", error);
         res.status(500).json({ error: "Error logging out", details: error.message });
     }
 };
-exports.gethistory = async (req,res)=>{
+
+exports.gethistory = async (req, res) => {
     try {
         const team_id = req.user.team_id;
         const submissions = await Submission.findAll({
@@ -286,8 +307,8 @@ exports.gethistory = async (req,res)=>{
 // exports.LogoutandBan = async (req,res)=>{
 //     try{
 //         res.clearCookie("token");
-        
-        
+
+
 
 //         res.status(200).json({message:"User logged out successfully"});
 //     }
@@ -301,7 +322,7 @@ exports.getAllEvents = async (req, res) => {
     try {
         const events = await Event.findAll();
         const now = new Date();
-        
+
         for (const event of events) {
             if (event.end_time && now > event.end_time) {
                 event.is_active = false;

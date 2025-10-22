@@ -10,17 +10,17 @@ const validateSubmissionWindow = async (req, res, next) => {
             return res.status(400).json({ error: 'problem_id is required' });
         }
 
-        const problem = await Problem.findByPk(problem_id, { include: 'Event' });
+        const problem = await Problem.findByPk(problem_id, { include: 'event' });
 
         if (!problem) {
             return res.status(404).json({ error: 'Problem not found' });
         }
 
-        if (!problem.Event) {
+        if (!problem.event) {
             return res.status(500).json({ error: 'Problem has no associated event' });
         }
 
-        const event = problem.Event;
+        const event = problem.event;
 
         // Check if the user is from the same event
         if (problem.event_id !== user_event_id && problem.isjunior !== isjunior) {

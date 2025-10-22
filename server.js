@@ -13,21 +13,22 @@ const resultRoutes = require('./routes/resultRoutes');
 const leaderboardRoutes = require('./routes/leaderboardroutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const webhookRoutes = require('./routes/WebhookRoutes');
+const timeRoutes = require('./routes/timeRoute.js');
 const app = express();
 app.use(express.json());  // To handle JSON payloads
 app.use(cookieParser())
 //const PORT = process.env.PORT || 5000;
 const cors = require("cors");
+const { time } = require("console");
+const auth = require("./middlewares/authMiddleware.js");
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://ctdncc.vercel.app"
-    ];
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://ctd-rc-frontend-2025.vercel.app",
+    "https://ctd-rc.credenz.co.in", 
+  ];
 
 // Allow all origins
 app.use(cors({
@@ -54,7 +55,10 @@ app.use("/result", resultRoutes);
 app.use("/leaderboard", leaderboardRoutes);
 app.use("/submission", submissionRoutes);
 app.use("/webhook", webhookRoutes);
-
+app.use("/time",timeRoutes);
+app.get('/verify',auth,(req,res)=>{
+  res.status(200).json({authenticated:true,user:req.user});  
+});
 
 const PORT = process.env.PORT || 3000;
 

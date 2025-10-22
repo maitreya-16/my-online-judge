@@ -3,13 +3,13 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const ProblemSample = sequelize.define('ProblemSample', {
+const ProblemSample = sequelize.define('problemsample', {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     problem_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Problems', // lowercase plural
+            model: 'problems', // lowercase plural
             key: 'id'
         }
     },

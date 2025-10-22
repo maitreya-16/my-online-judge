@@ -1,5 +1,7 @@
 const axios = require('axios');  
+// const CELERY_API_BASE = 'http://34.93.50.12:5000';//enter ur flask route
 const CELERY_API_BASE = 'http://server:5000';//enter ur flask route
+// 34.93.50.1
 const { Submission } = require('../models');
 
 async function enqueueTask(queue, data) {

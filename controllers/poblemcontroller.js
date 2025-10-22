@@ -128,7 +128,7 @@ exports.updateProblem = async (req, res) => {
       score,
       input_format,
       output_format,
-      consraints,
+      constraints,
       isjunior,
       time_limit,
       memory_limit,
@@ -147,7 +147,7 @@ exports.updateProblem = async (req, res) => {
     problem.score = score || problem.score;
     problem.input_format = input_format || problem.input_format;
     problem.output_format = output_format || problem.output_format;
-    problem.consraints = consraints || problem.consraints;
+    problem.constraints = constraints || problem.constraints;
     problem.isjunior = (isjunior !== undefined) ? isjunior : problem.isjunior;
     problem.time_limit = time_limit || problem.time_limit;
     problem.memory_limit = memory_limit || problem.memory_limit;

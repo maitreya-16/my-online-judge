@@ -27,7 +27,7 @@ services:
   #     - backend
   #   networks: [judge_net]
   backend:
-    image: maitreya16/node-backend:latest  
+    image: maitreya16/local-node-backend:latest  
     container_name: node-backend
     ports:
       - "3000:3000"
@@ -38,7 +38,7 @@ services:
       DB_URL: postgresql://neondb_owner:npg_4vzRJqHVSu9a@ep-bold-bush-aeoqgqq0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
     networks: [judge_net]
   server:
-    image: maitreya16/flask-windows:latest
+    image: maitreya16/local-flask:latest
     container_name: flask-server
     restart: always
     command: python workers/server.py
@@ -47,7 +47,7 @@ services:
     networks: [judge_net]
 
   worker:
-    image: maitreya16/flask-windows:latest
+    image: maitreya16/local-flask:latest
     container_name: flask-worker
     restart: always
     command: >

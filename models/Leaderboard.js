@@ -2,7 +2,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const Leaderboard = sequelize.define("Leaderboard", {
+const Leaderboard = sequelize.define("leaderboard", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -12,8 +12,7 @@ const Leaderboard = sequelize.define("Leaderboard", {
   event_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: "Events", key: "id" },
-    onDelete: "CASCADE",
+    references: { model: "events", key: "id" },
   },
 
   username1: {

@@ -347,7 +347,7 @@ def submit (submission_id , problem_id , code , language ):
                         "status":exec_result["status"],
                         "message":exec_result["message"],
                         "failed_test_case":f"{i+1}",
-                        "score":i*10
+                        "score":0
                     })
                     return result
 
@@ -361,7 +361,7 @@ def submit (submission_id , problem_id , code , language ):
                         "status":"wrong",
                         "message":"Failed Testcase",
                         "failed_test_case":f"{i+1}",
-                        "score":i*10
+                        "score":0
                     })
                     return result
 

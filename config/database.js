@@ -11,7 +11,7 @@ const fs = require('fs');
 const DB_HOST = "34.93.234.239";
 const DB_USER = "postgres";
 const DB_PASS = "Postgres25@";
-const DB_NAME = "ctddb";
+const DB_NAME = "rcdb";
 const DB_PORT = 5432;
 const DB_DIALECT = 'postgres';
 console.log(DB_PASS);
