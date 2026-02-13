@@ -1,5 +1,5 @@
 from flask import Flask,request,jsonify
-from tasks import run_code, run_system_code , submit_code
+from .tasks import run_code, run_system_code , submit_code
 app = Flask(__name__)
 
 @app.route("/enqueue/run", methods=["POST"])

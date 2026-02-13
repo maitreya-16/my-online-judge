@@ -18,14 +18,27 @@ async function updateDatabase(submission_id, status, message, failed_test_case, 
   const problem_id = updatedSubmission.problem_id;
   const problemID = `problem_${problem_id%4===0?4:problem_id%4}`;
   const team_id = updatedSubmission.team_id;
-  // Find leaderboard entry
-  const leaderboardEntry = await Leaderboard.findOne({ 
+  const event_id = updatedSubmission.event_id;
+  
+  // Find or create leaderboard entry
+  let leaderboardEntry = await Leaderboard.findOne({ 
     where: { team_id: team_id }
   });
 
   if (!leaderboardEntry) {
-    console.log("No leaderboard entry found");
-    return;
+    console.log("Creating new leaderboard entry for team:", team_id);
+    leaderboardEntry = await Leaderboard.create({
+      team_id,
+      teamname:updatedSubmission.teamname,
+      event_id,
+      problem_1: 0,
+      problem_2: 0,
+      problem_3: 0,
+      problem_4: 0,
+      total_score: 0,
+      total_submissions: 0,
+      last_submission_time: new Date()
+    });
   }
 
   // Update leaderboard if new score is higher

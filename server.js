@@ -62,6 +62,10 @@ app.get('/verify',auth,(req,res)=>{
 
 const PORT = process.env.PORT || 3000;
 
+syncDB().then(()=>{
+  console.log("DB synced")
+})
+
 sequelize.sync()
   .then(() => {
     console.log("✅ Database connected & synced");

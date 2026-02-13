@@ -184,7 +184,7 @@ exports.Login = async (req, res) => {
             return res.status(400).json({ error: "User not found" });
         }
 
-        if (!user || (event_id === 1 && user.ncc === 0) || (event_id === 2 && user.rc === 0)) {
+        if (!user || (event_id === 2 && user.rc === 0)) {
             return res.status(400).json({ error: "User not found. Please register first" });
         }
         const validPassword = await bcrypt.compare(password, user.password);
@@ -199,7 +199,8 @@ exports.Login = async (req, res) => {
                 username: user.username,
                 event_id: event_id,
                 isjunior: user.isjunior,
-                team_id: event_id === 1 ? user.ncc : user.rc
+                team_id: user.rc,
+                teamname:user.teamname
             },
             process.env.JWT_SECRET,
             { expiresIn: "2h" }
@@ -235,7 +236,7 @@ exports.Login = async (req, res) => {
                     username: user.username,
                     event_id: user.event_id,
                     isjunior: user.isjunior,
-                    team_id: event_id === 1 ? user.ncc : user.rc
+                    team_id: user.rc
                 }
             });
         }
@@ -304,34 +305,3 @@ exports.gethistory = async (req, res) => {
         res.status(500).json({ error: 'Error fetching submission history', details: error.message });
     }
 };
-// exports.LogoutandBan = async (req,res)=>{
-//     try{
-//         res.clearCookie("token");
-
-
-
-//         res.status(200).json({message:"User logged out successfully"});
-//     }
-//     catch(error){
-//         console.error("Error logging out:", error);
-//         res.status(500).json({ error: "Error logging out", details: error.message });
-//     }
-// };
-
-exports.getAllEvents = async (req, res) => {
-    try {
-        const events = await Event.findAll();
-        const now = new Date();
-
-        for (const event of events) {
-            if (event.end_time && now > event.end_time) {
-                event.is_active = false;
-                await event.save();
-            }
-        }
-        res.status(200).json({ events });
-    } catch (error) {
-        res.status(500).json({ error: 'Error fetching events', details: error.message });
-    }
-};
-

@@ -11,6 +11,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(255),
     allowNull: true,
   },
+  teamname:{
+    type: DataTypes.STRING(255),
+    defaultValue:"TEAM",
+    allowNull:false
+  },
   name: {
     type: DataTypes.STRING(255),
     allowNull: true,
@@ -29,14 +34,6 @@ const User = sequelize.define('User', {
     allowNull: true,
   },
   rc: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  ncc: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  enigma: {
     type: DataTypes.INTEGER,
     allowNull: true,
   },

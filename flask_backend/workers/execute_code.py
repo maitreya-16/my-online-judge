@@ -8,10 +8,11 @@ import logging
 import re
 import base64
 import redis
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_HOST = os.getenv('REDIS_HOST', 'local')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 r = redis.StrictRedis(host=REDIS_HOST, db=1, port=REDIS_PORT, decode_responses=True)
-HOST_MACHINE_BASE_DIR = os.getenv('HOST_MACHINE_BASE_DIR')
+# HOST_MACHINE_BASE_DIR = os.getenv('HOST_MACHINE_BASE_DIR')
+HOST_MACHINE_BASE_DIR = os.getcwd()
 
 
 logging.basicConfig(
@@ -41,7 +42,7 @@ LANGUAGE_CONFIG = {
     },
     "java": {
         "extension": ".java",
-        "image": "openjdk:21-jdk",
+        "image": "eclipse-temurin:21-jdk-alpine",
         "compile_cmd": "javac {filename}",
         "run_command": "java {classname}",
         "timeout": 5,
@@ -160,6 +161,8 @@ def execute_code_in_docker(submission_id, work_dir,run_cmd, input_file, image, t
 def run_code(submission_id , problem_id , code , language ,inputData=""):
     
     try:
+        logging.info("Compilation Successfull")
+
         code = decode(code)
         inputData=decode(inputData)
         

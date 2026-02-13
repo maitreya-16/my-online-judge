@@ -1,6 +1,6 @@
 const axios = require('axios');  
 // const CELERY_API_BASE = 'http://34.93.50.12:5000';//enter ur flask route
-const CELERY_API_BASE = 'http://server:5000';//enter ur flask route
+const CELERY_API_BASE = 'http://localhost:5000';//enter ur flask route
 // 34.93.50.1
 const { Submission } = require('../models');
 
@@ -82,8 +82,10 @@ exports.SubmitProblem = async (req, res) => {
         const { problem_id, code, language } = req.body;
         const team_id = req.user.team_id;
         const event_id = req.user.event_id;
+        const teamname = req.user.teamname
         console.log("Event_id",event_id);
         const submission = await Submission.create({
+            teamname,
             team_id,
             problem_id,
             event_id: event_id,

@@ -8,20 +8,15 @@ const Leaderboard = sequelize.define("leaderboard", {
     autoIncrement: true,
     primaryKey: true,
   },
-
+  teamname:{
+    type: DataTypes.STRING(255),
+    defaultValue:"TEAM",
+    allowNull:false
+  },
   event_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: { model: "events", key: "id" },
-  },
-
-  username1: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
-  },
-  username2: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
   },
   team_id: {
     type: DataTypes.INTEGER,

@@ -2,13 +2,13 @@ from asyncio import log
 from codecs import decode
 from celery import Celery
 import requests
-from workers.execute_code import run_code as run, runSystemcode
-from workers.execute_code import submit
+from .execute_code import run_code as run, runSystemcode
+from .execute_code import submit
 import os
 
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-BACKEND_HOST = os.getenv('BACKEND_HOST', 'backend')
+BACKEND_HOST = os.getenv('BACKEND_HOST', 'localhost')
 BACKEND_PORT = int(os.getenv('BACKEND_PORT', 3000))
 
 REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
