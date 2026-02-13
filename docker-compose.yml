@@ -27,27 +27,35 @@ services:
   #     - backend
   #   networks: [judge_net]
   backend:
-    image: maitreya16/local-node-backend:latest  
+    image: node-backend:latest  
     container_name: node-backend
     ports:
       - "3000:3000"
     environment:
       # COOKIE_DOMAIN: 34.100.169.196
+      FLASK_API_BASE: http://server:5000
       JWT_SECRET: your_super_secret_key
       NODE_ENV: production
       DB_URL: postgresql://neondb_owner:npg_4vzRJqHVSu9a@ep-bold-bush-aeoqgqq0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
     networks: [judge_net]
   server:
-    image: maitreya16/local-flask:latest
+    image: flas-backend:latest
     container_name: flask-server
     restart: always
-    command: python workers/server.py
+    command: python -m workers.server
     environment:
       PYTHONPATH: /app
+      HOST_MACHINE_BASE_DIR: /home/maitreya/Desktop/node-oj/my-online-judge  # Change this to your actual path  
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_BROKER_URL: redis://redis:6379/0
+      REDIS_BACKEND_URL: redis://redis:6379/0
+      BACKEND_HOST: backend
+      BACKEND_PORT: 3000
     networks: [judge_net]
 
   worker:
-    image: maitreya16/local-flask:latest
+    image: flas-backend:latest
     container_name: flask-worker
     restart: always
     command: >
@@ -58,7 +66,7 @@ services:
     depends_on:
       - redis
     environment:
-      HOST_MACHINE_BASE_DIR: /home/ajuubhaiug/OJ  # Change this to your actual path  
+      HOST_MACHINE_BASE_DIR: /home/maitreya/Desktop/node-oj/my-online-judge  # Change this to your actual path  
       PYTHONPATH: /app
       REDIS_HOST: redis
       REDIS_PORT: 6379

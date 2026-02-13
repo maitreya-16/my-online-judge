@@ -16,25 +16,12 @@ const User = sequelize.define('User', {
     defaultValue:"TEAM",
     allowNull:false
   },
-  name: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
-  },
-  phone: {
-    type: DataTypes.BIGINT,
-    allowNull: true,
-  },
-  email: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
-    validate: { isEmail: true },
-  },
   password: {
     type: DataTypes.STRING(255),
     allowNull: true,
   },
   rc: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   isjunior: {
@@ -42,6 +29,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: false,
   },
+  role:{
+    type : DataTypes.STRING(100),
+    allowNull:false,
+    defaultValue:"USER"
+  }
 }, {
   tableName: 'user', // 👈 lowercase to avoid quoted "User"
   timestamps: false,

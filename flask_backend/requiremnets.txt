@@ -1,0 +1,2 @@
+Requirement already satisfied: dotenv in ./venv/lib/python3.12/site-packages (0.9.9)
+Requirement already satisfied: python-dotenv in ./venv/lib/python3.12/site-packages (from dotenv) (1.2.1)

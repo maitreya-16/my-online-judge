@@ -3,164 +3,132 @@ const bcrypt = require('bcryptjs');
 const { User, Team, Submission } = require("../models");
 require("dotenv").config();
 const Event = require("../models/Event");
+const { v4: uuidv4 } = require('uuid');
+
 exports.registerUser = async (req, res) => {
     try {
-        console.log(req.body); // Debug incoming request body
-        const { username, email, password, isjunior, event_id, role } = req.body;
+        console.log(req.body);
 
-        // Input validation
-        if (!username || !email || !password || isjunior === undefined) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
+        const { teamname, username, password, isjunior, event_id } = req.body;
 
-        if (role !== 'admin' && !event_id) {
-            return res.status(400).json({ error: 'Event ID is required for non-admin users' });
+        // Basic validation
+        if (!username || !password || isjunior === undefined) {
+            return res.status(400).json({ error: 'Username, password and isjunior are required' });
         }
 
         if (typeof password !== 'string' || password.length < 6) {
-            return res.status(400).json({ error: 'Password must be a string and at least 6 characters long' });
+            return res.status(400).json({ error: 'Password must be at least 6 characters long' });
         }
 
-        const event = await Event.findByPk(event_id);
-        if (!event) {
-            return res.status(400).json({ error: 'Event not found' });
+        // Optional: Check if event exists (only if you're actually using event_id)
+        if (event_id) {
+            const event = await Event.findByPk(event_id);
+            if (!event) {
+                return res.status(400).json({ error: 'Event not found' });
+            }
         }
 
-        // Email format validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
-        }
-
-        // Username format validation
-        if (username.length < 3 || username.length > 20) {
-            return res.status(400).json({ error: 'Username must be between 3 and 20 characters' });
-        }
-
-        const checkUser = await User.findOne({ where: { username, event_id } });
-        if (checkUser) {
-            return res.status(400).json({ error: 'Username already exists for this event and category' });
-        }
-
-        const checkEmail = await User.findOne({ where: { email, event_id } });
-        if (checkEmail) {
-            return res.status(400).json({ error: 'Email already registered' });
+        // Check if user already exists
+        const existingUser = await User.findOne({ where: { username } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already taken' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        //  First, create the user
         const newUser = await User.create({
             username,
+            teamname: teamname || "TEAM",
             password: hashedPassword,
-            email,
-            role: role || 'user',
             isjunior,
-            event_id
+            role:"USER",
+            rc:uuidv4()
         });
-
-        //  Now, create their solo team using their user ID
-        const soloTeam = await Team.create({
-            team_name: `${username}_solo_${event_id}`,
-            user1_id: newUser.id,  // Assign the user ID after creation
-            user2_id: null,        // No second user
-            event_id,
-            isjunior,
-            score: 0
-        });
-
-        //  Update the user with their solo team ID
-        await newUser.update({ team_id: soloTeam.id });
-        await soloTeam.update({ user1_id: newUser.id });
 
         res.status(201).json({
             message: 'User registered successfully!',
             user: {
+                id: newUser.id,
                 username: newUser.username,
-                email: newUser.email,
-                event_id: newUser.event_id,
-                isjunior: newUser.isjunior
+                teamname: newUser.teamname,
+                isjunior: newUser.isjunior,
+                role: newUser.role
             }
         });
 
     } catch (error) {
         console.error('Registration error:', error);
+
         if (error.name === 'SequelizeValidationError') {
             return res.status(400).json({
                 error: 'Validation error',
                 details: error.errors.map(e => e.message)
             });
         }
-        res.status(500).json({ error: 'Error registering user', details: error.message });
+
+        res.status(500).json({
+            error: 'Error registering user',
+            details: error.message
+        });
     }
 };
-exports.RegisterTeam = async (req, res) => {
+
+exports.updatePassword = async (req, res) => {
     try {
-        const { username1, team_name, username2, event_id } = req.body;
+        const { username, newPassword } = req.body;
 
-        //  Find both users
-        const user1 = await User.findOne({ where: { username: username1, event_id } });
-        const user2 = await User.findOne({ where: { username: username2, event_id } });
-
-        const event = await Event.findByPk(event_id);
-        if (!event) {
-            return res.status(400).json({ error: 'Event not found' });
+        // Validation
+        if (!username || !newPassword) {
+            return res.status(400).json({
+                error: "Username and newPassword are required",
+                received: req.body
+            });
         }
 
-        if (!user1 || !user2) {
-            return res.status(404).json({ error: "Both users must be registered before creating a team." });
+        if (typeof newPassword !== "string" || newPassword.length < 6) {
+            return res.status(400).json({
+                error: "New password must be at least 6 characters long"
+            });
         }
 
-        //  Ensure both users are in solo teams (i.e., user2_id must be NULL)
-        const soloTeam1 = await Team.findOne({ where: { id: user1.team_id, user2_id: null } });
-        const soloTeam2 = await Team.findOne({ where: { id: user2.team_id, user2_id: null } });
+        // Find user
+        const user = await User.findOne({ where: { username } });
 
-        if (!soloTeam1 || !soloTeam2) {
-            return res.status(400).json({ error: "Both users must be playing solo before forming a team." });
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found"
+            });
         }
 
-        //  Ensure users belong to the same event & category
-        if (user1.event_id !== user2.event_id || user1.isjunior !== user2.isjunior) {
-            return res.status(400).json({ error: "Both users must be in the same event and category." });
-        }
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        const teamExists = await Team.findOne({ where: { team_name, event_id } });
-        if (teamExists) {
-            return res.status(400).json({ error: "Team name already exists. Please choose another." });
-        }
+        // Update password
+        user.password = hashedPassword;
+        await user.save();
 
-        const team = await Team.create({
-            team_name,
-            user1_id: user1.id,
-            user2_id: user2.id,
-            event_id,
-            isjunior: user1.isjunior,
-            score: 0
+        return res.status(200).json({
+            message: "Password updated successfully"
         });
 
-        //  Delete their old solo teams
-        await Team.destroy({ where: { id: user1.team_id } });
-        await Team.destroy({ where: { id: user2.team_id } });
+    } catch (error) {
+        console.error("Update password error:", error);
 
-        //  Assign the new team ID to both users
-        await User.update({ team_id: team.id }, { where: { id: user1.id } });
-        await User.update({ team_id: team.id }, { where: { id: user2.id } });
-
-        return res.status(201).json({ message: "Team registered successfully!", team: team.team_name });
-    }
-    catch (error) {
-        console.error("Error registering team:", error);
-        return res.status(500).json({ error: "Error registering team", details: error.message });
+        return res.status(500).json({
+            error: "Error updating password",
+            details: error.message
+        });
     }
 };
+
 
 exports.Login = async (req, res) => {
     try {
-        const { username, password, event_id, isjunior } = req.body;
+        const {teamname, username, password, event_id, isjunior } = req.body;
         let isEnded = false;
         // Input validation
-        if (!username || isjunior === undefined || !password || !event_id) {
-            return res.status(400).json({ error: 'Username, password, and isjunior are required' });
+    if (!username || isjunior === undefined || !password || !event_id || !teamname) {
+            return res.status(400).json({ error: 'Username, password,teamname, and isjunior are required' });
         }
 
         const event = await Event.findByPk(event_id);

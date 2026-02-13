@@ -8,11 +8,13 @@ import logging
 import re
 import base64
 import redis
+from dotenv import load_dotenv
+load_dotenv()
 REDIS_HOST = os.getenv('REDIS_HOST', 'local')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 r = redis.StrictRedis(host=REDIS_HOST, db=1, port=REDIS_PORT, decode_responses=True)
-# HOST_MACHINE_BASE_DIR = os.getenv('HOST_MACHINE_BASE_DIR')
-HOST_MACHINE_BASE_DIR = os.getcwd()
+HOST_MACHINE_BASE_DIR = os.getenv('HOST_MACHINE_BASE_DIR')
+# HOST_MACHINE_BASE_DIR = os.getcwd()
 
 
 logging.basicConfig(
@@ -115,7 +117,7 @@ def execute_code_in_docker(submission_id, work_dir,run_cmd, input_file, image, t
     work_dir = os.path.join(host, "submissions", f"submission_{submission_id}")
     container_name = f"submission_{submission_id}_runner"
 
-    logging.info("Working dir : ",work_dir,"Input file : ",input_file_rel)
+    logging.info("Working dir: %s, Input file: %s", work_dir, input_file_rel)
 
     docker_cmd = [
         "docker", "run", "--rm",
@@ -382,7 +384,8 @@ def submit (submission_id , problem_id , code , language ):
             cleanup_submission_directory(work_dir)
         
 def runSystemcode(submission_id, problem_id, inputData=None):
-   logging.info("Input data ",inputData)
+   logging.info("Input data %s", inputData)
+
    try:
         inputData=decode(inputData)
 
@@ -410,7 +413,11 @@ def runSystemcode(submission_id, problem_id, inputData=None):
 
         if not solution_code:
             logging.error(f"Solution code not found in Redis for problem {problem_id}")
-            return "[Error] Solution code not found"
+            return {
+                        "status": "failed",
+                        "message": "Solution code not found"
+                    }
+
         
         solution_file = os.path.join(work_dir, filename)
 
@@ -468,4 +475,4 @@ def runSystemcode(submission_id, problem_id, inputData=None):
 
    finally:
         logging.info("Cleaning up submission directory")
-        # cleanup_submission_directory(work_dir)
+        cleanup_submission_directory(work_dir)
