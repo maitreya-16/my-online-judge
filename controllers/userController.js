@@ -128,7 +128,7 @@ exports.Login = async (req, res) => {
         let isEnded = false;
         // Input validation
     if (!username || isjunior === undefined || !password || !event_id || !teamname) {
-            return res.status(400).json({ error: 'Username, password,teamname, and isjunior are required' });
+            return res.status(400).json({ error: 'Username,Password,Teamname and isjunior are required' });
         }
 
         const event = await Event.findByPk(event_id);
@@ -146,7 +146,7 @@ exports.Login = async (req, res) => {
         }
         let user;
 
-        user = await User.findOne({ where: { username } });
+        user = await User.findOne({ where: { username,teamname } });
 
         if (user && user.isjunior != isjunior) {
             return res.status(400).json({ error: "User not found" });

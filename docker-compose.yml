@@ -1,96 +1,159 @@
+# version: "3.9"
+
+# services:
+#   backend:
+#     image: node-backend:latest  
+#     container_name: node-backend
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       # COOKIE_DOMAIN: 34.100.169.196
+#       FLASK_API_BASE: http://server:5000
+#       JWT_SECRET: your_super_secret_key
+#       NODE_ENV: production
+#       DB_URL: postgresql://neondb_owner:npg_4vzRJqHVSu9a@ep-bold-bush-aeoqgqq0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+#     networks: [judge_net]
+#   server:
+#     image: flas-backend:latest
+#     container_name: flask-server
+#     restart: always
+#     command: python -m workers.server
+#     environment:
+#       PYTHONPATH: /app
+#       HOST_MACHINE_BASE_DIR: /home/maitreya/Desktop/node-oj/my-online-judge  # Change this to your actual path  
+#       REDIS_HOST: redis
+#       REDIS_PORT: 6379
+#       REDIS_BROKER_URL: redis://redis:6379/0
+#       REDIS_BACKEND_URL: redis://redis:6379/0
+#       BACKEND_HOST: backend
+#       BACKEND_PORT: 3000
+#     networks: [judge_net]
+
+#   worker:
+#     image: flas-backend:latest
+#     container_name: flask-worker
+#     restart: always
+#     command: >
+#       celery -A workers.tasks worker
+#             --loglevel=${LOG_LEVEL:-DEBUG}
+#             --concurrency=3
+#             --queues=submitQueue,runQueue,runSystemQueue
+#     depends_on:
+#       - redis
+#     environment:
+#       HOST_MACHINE_BASE_DIR: /home/maitreya/Desktop/node-oj/my-online-judge  # Change this to your actual path  
+#       PYTHONPATH: /app
+#       REDIS_HOST: redis
+#       REDIS_PORT: 6379
+#       REDIS_BROKER_URL: redis://redis:6379/0
+#       REDIS_BACKEND_URL: redis://redis:6379/0
+#       BACKEND_HOST: backend
+#       BACKEND_PORT: 3000
+#     working_dir: /app
+#     volumes:
+#       - ./submissions:/app/submissions:z
+#       - /var/run/docker.sock:/var/run/docker.sock  
+#     networks: [judge_net]
+
+#   redis:
+#     image: redis:latest
+#     container_name: my-redis
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redisdata:/data
+#     networks: [judge_net]
+
+# networks: 
+#   judge_net:
+
+# volumes:
+#   redisdata:
+
 version: "3.9"
 
 services:
-  # certbot:
-  #   image: certbot/certbot
-  #   container_name: certbot
-  #   volumes:
-  #     - ./certbot/conf:/etc/letsencrypt
-  #     - ./certbot/www:/var/www/certbot
-  #   command: >
-  #     certonly --webroot -w /var/www/certbot
-  #     --keep-until-expiring --email maitreyavaidyam@gmail.com
-  #     -d nccbackend.credenz.co.in --agree-tos
-  #   networks: [judge_net]
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: nginx
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
-  #     - ./certbot/conf:/etc/letsencrypt
-  #     - ./certbot/www:/var/www/certbot
-  #   depends_on:
-  #     - backend
-  #   networks: [judge_net]
   backend:
-    image: node-backend:latest  
+    image: node-backend:latest
     container_name: node-backend
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
     environment:
-      # COOKIE_DOMAIN: 34.100.169.196
-      FLASK_API_BASE: http://server:5000
-      JWT_SECRET: your_super_secret_key
-      NODE_ENV: production
-      DB_URL: postgresql://neondb_owner:npg_4vzRJqHVSu9a@ep-bold-bush-aeoqgqq0-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-    networks: [judge_net]
-  server:
-    image: flas-backend:latest
-    container_name: flask-server
-    restart: always
-    command: python -m workers.server
-    environment:
-      PYTHONPATH: /app
-      HOST_MACHINE_BASE_DIR: /home/maitreya/Desktop/node-oj/my-online-judge  # Change this to your actual path  
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_BROKER_URL: redis://redis:6379/0
-      REDIS_BACKEND_URL: redis://redis:6379/0
-      BACKEND_HOST: backend
-      BACKEND_PORT: 3000
-    networks: [judge_net]
+      NODE_ENV: ${NODE_ENV}
+      JWT_SECRET: ${JWT_SECRET}
+      DB_URL: ${DB_URL}
+      FLASK_API_BASE: ${FLASK_API_BASE}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      COOKIE_SECURE: ${COOKIE_SECURE}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE}
+      FRONTEND_URL: ${FRONTEND_URL}
+    networks:
+      - judge_net
 
-  worker:
-    image: flas-backend:latest
-    container_name: flask-worker
-    restart: always
-    command: >
-      celery -A workers.tasks worker
-            --loglevel=${LOG_LEVEL:-DEBUG}
-            --concurrency=3
-            --queues=submitQueue,runQueue,runSystemQueue
-    depends_on:
-      - redis
-    environment:
-      HOST_MACHINE_BASE_DIR: /home/maitreya/Desktop/node-oj/my-online-judge  # Change this to your actual path  
-      PYTHONPATH: /app
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_BROKER_URL: redis://redis:6379/0
-      REDIS_BACKEND_URL: redis://redis:6379/0
-      BACKEND_HOST: backend
-      BACKEND_PORT: 3000
-    working_dir: /app
-    volumes:
-      - ./submissions:/app/submissions:z
-      - /var/run/docker.sock:/var/run/docker.sock  
-    networks: [judge_net]
+    server:
+      image: flas-backend:latest
+      container_name: flask-server
+      restart: always
+      command: python -m workers.server
+      env_file:
+        - .env
+      environment:
+        PYTHONPATH: ${PYTHONPATH}
+        HOST_MACHINE_BASE_DIR: ${HOST_MACHINE_BASE_DIR}
+        REDIS_HOST: ${REDIS_HOST}
+        REDIS_PORT: ${REDIS_PORT}
+        REDIS_BROKER_URL: ${REDIS_BROKER_URL}
+        REDIS_BACKEND_URL: ${REDIS_BACKEND_URL}
+        BACKEND_HOST: ${BACKEND_HOST}
+        BACKEND_PORT: ${BACKEND_PORT}
+        BACKEND_BASE_URL: ${BACKEND_BASE_URL}
+      networks:
+        - judge_net
 
-  redis:
-    image: redis:latest
-    container_name: my-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redisdata:/data
-    networks: [judge_net]
+    worker:
+      image: maitreya16/rc-flask-backend:latest
+      container_name: flask-worker
+      restart: always
+      command: >
+        celery -A workers.tasks worker
+        --loglevel=${LOG_LEVEL}
+        --concurrency=${WORKER_CONCURRENCY}
+        --queues=${WORKER_QUEUES}
+      depends_on:
+        - redis
+      env_file:
+        - .env
+      environment:
+        PYTHONPATH: ${PYTHONPATH}
+        HOST_MACHINE_BASE_DIR: ${HOST_MACHINE_BASE_DIR}
+        REDIS_HOST: ${REDIS_HOST}
+        REDIS_PORT: ${REDIS_PORT}
+        REDIS_BROKER_URL: ${REDIS_BROKER_URL}
+        REDIS_BACKEND_URL: ${REDIS_BACKEND_URL}
+        BACKEND_HOST: ${BACKEND_HOST}
+        BACKEND_PORT: ${BACKEND_PORT}
+        BACKEND_BASE_URL: ${BACKEND_BASE_URL}
+      working_dir: /app
+      volumes:
+        - ./submissions:/app/submissions:z
+        - /var/run/docker.sock:/var/run/docker.sock
+      networks:
+        - judge_net
 
-networks: 
-  judge_net:
+    redis:
+      image: redis:latest
+      container_name: my-redis
+      ports:
+        - "${REDIS_PORT}:6379"
+      volumes:
+        - redisdata:/data
+      networks:
+        - judge_net
 
-volumes:
-  redisdata:
+  networks:
+    judge_net:
+
+  volumes:
+    redisdata:

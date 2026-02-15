@@ -8,8 +8,14 @@ import os
 
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-BACKEND_HOST = os.getenv('BACKEND_HOST', 'localhost')
-BACKEND_PORT = int(os.getenv('BACKEND_PORT', 3000))
+# BACKEND_HOST = os.getenv('BACKEND_HOST', 'localhost')
+# BACKEND_PORT = int(os.getenv('BACKEND_PORT', 3000))
+BACKEND_BASE_URL = os.getenv('BACKEND_BASE_URL', 'http://localhost:3000')
+
+WEBHOOK_URL_RUN = f'{BACKEND_BASE_URL}/webhook/run'
+WEBHOOK_URL_SUBMIT = f'{BACKEND_BASE_URL}/webhook/submit'
+WEBHOOK_URL_SYSTEM = f'{BACKEND_BASE_URL}/webhook/system'
+
 
 REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
 REDIS_BACKEND_URL = os.getenv('REDIS_BACKEND_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
@@ -35,9 +41,9 @@ app.conf.result_expires = 3600  # seconds me he.. 1 hour
 # WEBHOOK_URL_SUBMIT = f'https://abhitime.credenz.co.in/webhook/submit'
 # WEBHOOK_URL_SYSTEM = f'https://abhitime.credenz.co.in/webhook/system'
 
-WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
-WEBHOOK_URL_SUBMIT = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/submit'
-WEBHOOK_URL_SYSTEM = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/system'
+# WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
+# WEBHOOK_URL_SUBMIT = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/submit'
+# WEBHOOK_URL_SYSTEM = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/system'
 
 
 def send_webhook_result(url, data):

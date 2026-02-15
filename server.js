@@ -27,7 +27,9 @@ const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:3000",
     "https://ctd-rc-frontend-2025.vercel.app",
-    "https://ctd-rc.credenz.co.in", 
+    "https://ctd-rc.credenz.co.in",
+    process.env.FLASK_API_BASE, 
+    process.env.FRONTEND_URL,
   ];
 
 // Allow all origins
