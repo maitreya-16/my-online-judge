@@ -29,7 +29,7 @@ exports.getTeamResult = async (req, res) => {
     let rank = null;
 
     leaderboard.forEach((entry, index) => {
-      if (entry.team_id === parseInt(team_id)) {
+      if (entry.team_id === team_id) {
         teamResult = entry;
         rank = index + 1; // rank starts at 1
       }
