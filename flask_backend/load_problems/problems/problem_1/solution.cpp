@@ -1,13 +1,13 @@
 #include <iostream>
-using namespace std;
 
-long long solve_logic(int n) {
-    return (long long)n * (n + 1) / 2;
+// Function that calculates and returns the square of a number
+double square(double number) {
+    return number * number;
 }
 
 int main() {
-    int n;
-    cin >> n;
-    cout << solve_logic(n);
+    double num1;
+    std::cin >> num1;
+    std::cout << square(num1);
     return 0;
 }

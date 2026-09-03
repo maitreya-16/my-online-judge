@@ -1,5 +1,5 @@
 from flask import Flask,request,jsonify
-from .tasks import run_code, run_system_code , submit_code
+from tasks import run_code, run_system_code , submit_code
 app = Flask(__name__)
 
 @app.route("/enqueue/run", methods=["POST"])
@@ -21,5 +21,4 @@ def enqueue_system():
     return jsonify({"message": "System run task enqueued"}), 200
 
 if __name__ == "__main__":
-    #PORT = 5000 
     app.run(host="0.0.0.0", port=5000, debug=True)

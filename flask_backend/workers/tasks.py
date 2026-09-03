@@ -1,24 +1,17 @@
-from asyncio import log
-from codecs import decode
 from celery import Celery
 import requests
-from .execute_code import run_code as run, runSystemcode
-from .execute_code import submit
 import os
 
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-# BACKEND_HOST = os.getenv('BACKEND_HOST', 'localhost')
-# BACKEND_PORT = int(os.getenv('BACKEND_PORT', 3000))
-BACKEND_BASE_URL = os.getenv('BACKEND_BASE_URL', 'http://localhost:3000')
-
-WEBHOOK_URL_RUN = f'{BACKEND_BASE_URL}/webhook/run'
-WEBHOOK_URL_SUBMIT = f'{BACKEND_BASE_URL}/webhook/submit'
-WEBHOOK_URL_SYSTEM = f'{BACKEND_BASE_URL}/webhook/system'
+from workers.submission_runner import (
+    run_code as execute_code,
+    run_system_code as execute_system_code,
+    submit as evaluate_submission,
+)
 
 
-REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
-REDIS_BACKEND_URL = os.getenv('REDIS_BACKEND_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://backend:3000')
+REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', 'redis://redis:6379/0')
+REDIS_BACKEND_URL = os.getenv('REDIS_BACKEND_URL', 'redis://redis:6379/0')
 
 app = Celery(    
     'tasks',
@@ -32,18 +25,12 @@ app.conf.update(
     worker_prefetch_multiplier=1,
     task_acks_late=True,
 )
-# specify ur express port
-
 
 app.conf.result_expires = 3600  # seconds me he.. 1 hour
 
-# WEBHOOK_URL_RUN = f'https://abhitime.credenz.co.in/webhook/run'
-# WEBHOOK_URL_SUBMIT = f'https://abhitime.credenz.co.in/webhook/submit'
-# WEBHOOK_URL_SYSTEM = f'https://abhitime.credenz.co.in/webhook/system'
-
-# WEBHOOK_URL_RUN = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/run'
-# WEBHOOK_URL_SUBMIT = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/submit'
-# WEBHOOK_URL_SYSTEM = f'http://{BACKEND_HOST}:{BACKEND_PORT}/webhook/system'
+WEBHOOK_URL_RUN = f'{BACKEND_URL}/webhook/run'
+WEBHOOK_URL_SUBMIT = f'{BACKEND_URL}/webhook/submit'
+WEBHOOK_URL_SYSTEM = f'{BACKEND_URL}/webhook/system'
 
 
 def send_webhook_result(url, data):
@@ -61,16 +48,13 @@ def send_webhook_result(url, data):
 
 @app.task(name="tasks.run_code", queue="runQueue")
 def run_code(data):
-    # print("Running code...")
-    result = run(
+    result = execute_code(
         submission_id=data['submission_id'],
         code=data['code'],
         language=data['language'],
         problem_id=data['problem_id'],
         inputData=data['customTestcase']
     )
-    # return (result)
-
     webhook_data = {
         'submission_id': data['submission_id'],
         'status': result.get('status'),
@@ -87,8 +71,7 @@ def run_code(data):
 
 @app.task(name="tasks.submit_code", queue="submitQueue")
 def submit_code(data):
-    print("Submitting code...")
-    result = submit(
+    result = evaluate_submission(
         submission_id=data['submission_id'],
         problem_id=data['problem_id'],
         code=data['code'],
@@ -102,7 +85,6 @@ def submit_code(data):
         'total_test_case':result.get('total_test_case'),
         'score':result.get('score'),
     }
-    print("Webhook Data:", webhook_data)
     send_webhook_result(WEBHOOK_URL_SUBMIT, webhook_data)
     return (result)
 
@@ -110,18 +92,12 @@ def submit_code(data):
 
 @app.task(name="tasks.run_system_code", queue="runSystemQueue")
 def run_system_code(data):
-    # if data.get('customTestcase'):
-    #     data['customTestcase'] = decode(data['customTestcase'])
-    
-    result = runSystemcode(
+
+    result = execute_system_code(
         submission_id=data['submission_id'],
         problem_id=data['problem_id'],
         inputData=data.get('customTestcase')
     )
-    # return (result)
-    
-
-    # return (result)
     
     webhook_data = {
         'submission_id': data['submission_id'],

@@ -154,7 +154,7 @@ exports.SubmitWebhook = async (req, res) => {
         message: "Submit webhook processed successfully",
       });
   } catch (error) {
-    console.error("[RunWebhook] Error processing webhook:", error);
+    console.error("[SubmitWebhook] Error processing webhook:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

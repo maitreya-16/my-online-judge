@@ -99,8 +99,15 @@ exports.SubmitProblem = async (req, res) => {
             language,
             problem_id,
         };
+        // const SubmissionData = {
+        //     submission_id: `submit_${Date.now()}`,
+        //     code,
+        //     language,
+        //     problem_id,
+        // };
         await enqueueTask('submitQueue', SubmissionData)
         res.status(200).json({ message: 'Code submitted successfully, waiting for evaluation.', submission_id: submission.id, result: submission.result });
+        // res.status(200).json({ message: 'Code submitted successfully, waiting for evaluation.', submission_id: SubmissionData.submission_id, result: 'Pending' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error submitting code', details: error.message });
